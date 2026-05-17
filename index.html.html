@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a3a2a">
+<title>🌿 PDV Sacolão</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+:root {
+  --verde: #1a3a2a;
+  --verde-m: #2d6a4f;
+  --verde-c: #52b788;
+  --verde-s: #e8f5ee;
+  --laranja: #e76f51;
+  --amarelo: #f4c430;
+  --creme: #faf8f3;
+  --branco: #ffffff;
+  --texto: #1a1a1a;
+  --cinza: #6b7280;
+  --borda: #d4e8db;
+  --sombra: 0 4px 24px rgba(26,58,42,0.13);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto);min-height:100vh}
+
+/* ===== TELAS ===== */
+.tela{display:none;min-height:100vh}
+.tela.ativa{display:block}
+
+/* ===== LOGIN / CADASTRO ===== */
+.auth-bg{
+  min-height:100vh;
+  background: linear-gradient(160deg, #1a3a2a 0%, #2d6a4f 50%, #1a3a2a 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;
+}
+.auth-logo{font-family:'Fraunces',serif;font-size:36px;font-weight:900;color:var(--amarelo);text-align:center;margin-bottom:6px}
+.auth-logo span{color:var(--verde-c);font-style:italic}
+.auth-sub{color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:32px}
+.auth-card{background:var(--branco);border-radius:24px;padding:28px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.auth-titulo{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--verde);margin-bottom:20px}
+.trial-badge{background:var(--amarelo);color:var(--verde);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;display:inline-block;margin-bottom:16px}
+
+/* ===== INPUTS ===== */
+.campo{margin-bottom:14px}
+.campo label{font-size:11px;font-weight:600;color:var(--cinza);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:5px}
+.campo input,.campo select{
+  width:100%;padding:13px 14px;border-radius:12px;
+  border:1.5px solid var(--borda);background:var(--creme);
+  font-family:'DM Sans',sans-serif;font-size:14px;color:var(--texto);outline:none;
+  transition:border-color 0.2s
+}
+.campo input:focus,.campo select:focus{border-color:var(--verde-c);background:var(--branco)}
+
+/* ===== BOTÕES ===== */
+.btn{width:100%;padding:14px;border-radius:12px;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(0.98)}
+.btn-verde{background:var(--verde);color:var(--branco)}
+.btn-laranja{background:var(--laranja);color:var(--branco)}
+.btn-amarelo{background:var(--amarelo);color:var(--verde)}
+.btn-outline{background:transparent;border:1.5px solid var(--borda);color:var(--texto)}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:10px;width:auto}
+.btn-link{background:none;border:none;color:var(--verde-m);font-size:13px;cursor:pointer;text-decoration:underline;width:auto;padding:4px}
+
+/* ===== HEADER APP ===== */
+.app-header{
+  background:var(--verde);padding:14px 18px 10px;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.2)
+}
+.app-header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.app-logo{font-family:'Fraunces',serif;font-size:20px;color:var(--amarelo);font-weight:900}
+.app-logo span{color:var(--verde-c)}
+.app-user{text-align:right}
+.app-user-nome{color:var(--branco);font-size:13px;font-weight:500}
+.app-user-status{font-size:10px;color:rgba(255,255,255,0.6)}
+.nav-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.tab-btn{flex-shrink:0;padding:6px 12px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.7);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s}
+.tab-btn.ativo{background:var(--amarelo);color:var(--verde);border-color:var(--amarelo);font-weight:700}
+
+/* ===== PÁGINAS ===== */
+.pagina{display:none;padding:16px;animation:fadeIn 0.2s ease}
+.pagina.ativa{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== CARDS ===== */
+.card{background:var(--branco);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:var(--sombra);border:1px solid var(--borda)}
+.card-titulo{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--verde);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* ===== STATS ===== */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{background:var(--branco);border-radius:14px;padding:16px;border:1px solid var(--borda);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.stat-icon{font-size:24px;margin-bottom:6px}
+.stat-valor{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--verde)}
+.stat-label{font-size:11px;color:var(--cinza);font-weight:500;margin-top:2px}
+
+/* ===== PRODUTO VENDA ===== */
+.pv-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;background:var(--verde-s);margin-bottom:8px;cursor:pointer;transition:all 0.15s}
+.pv-item:active{transform:scale(0.98)}
+.pv-esq{display:flex;align-items:center;gap:10px}
+.pv-nome{font-weight:600;font-size:14px}
+.pv-preco{font-size:12px;color:var(--cinza)}
+.pv-add{background:var(--verde);color:white;border:none;border-radius:8px;width:30px;height:30px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* ===== CARRINHO ===== */
+.carr-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--borda)}
+.carr-item:last-child{border-bottom:none}
+.carr-nome{flex:1}
+.carr-nome div:first-child{font-weight:600;font-size:14px}
+.carr-nome div:last-child{font-size:11px;color:var(--cinza)}
+.carr-total{font-family:'Fraunces',serif;font-weight:700;color:var(--verde);font-size:14px}
+.total-box{background:var(--verde);border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.total-label{color:rgba(255,255,255,0.8);font-size:13px}
+.total-valor{font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--amarelo)}
+
+/* ===== PAGAMENTO ===== */
+.pgto-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.pgto-btn{padding:12px;border-radius:12px;border:2px solid var(--borda);background:var(--creme);cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;transition:all 0.2s}
+.pgto-btn .icon{font-size:20px;display:block;margin-bottom:4px}
+.pgto-btn.sel{border-color:var(--verde);background:var(--verde-s);color:var(--verde);font-weight:700}
+
+/* ===== PRODUTO LISTA ===== */
+.prod-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--borda)}
+.prod-item:last-child{border-bottom:none}
+.prod-emoji{font-size:28px;width:42px;text-align:center;flex-shrink:0}
+.prod-info{flex:1}
+.prod-nome{font-weight:600;font-size:14px}
+.prod-detalhe{font-size:12px;color:var(--cinza);margin-top:2px}
+.prod-estoque{font-size:11px;color:var(--cinza)}
+.estoque-baixo{color:var(--laranja)!important;font-weight:600}
+.prod-acoes{display:flex;gap:6px;flex-direction:column}
+.btn-icon{width:32px;height:32px;border-radius:8px;border:none;background:var(--verde-s);color:var(--verde);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.btn-icon.danger{background:#fdecea;color:var(--laranja)}
+
+/* ===== FIADO ===== */
+.fiado-item{padding:14px 0;border-bottom:1px solid var(--borda)}
+.fiado-item:last-child{border-bottom:none}
+.fiado-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.fiado-nome{font-weight:600;font-size:15px}
+.fiado-divida{font-family:'Fraunces',serif;font-weight:700;color:var(--laranja);font-size:16px}
+.fiado-acoes{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+
+/* ===== CUPOM ===== */
+.cupom{background:var(--branco);border:2px dashed var(--borda);border-radius:16px;padding:20px;font-family:'DM Sans',sans-serif}
+.cupom-loja{font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--verde);text-align:center}
+.cupom-linha{border-top:1px dashed var(--borda);margin:12px 0}
+.cupom-item{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.cupom-total{display:flex;justify-content:space-between;font-weight:700;font-size:16px;margin-top:4px}
+
+/* ===== ADMIN ===== */
+.admin-header{background:linear-gradient(135deg,#1a3a2a,#2d6a4f);padding:20px;color:white}
+.admin-titulo{font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--amarelo)}
+.admin-sub{font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px}
+.cliente-card{background:var(--branco);border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--borda);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.cliente-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.cliente-nome{font-weight:700;font-size:15px}
+.cliente-email{font-size:12px;color:var(--cinza)}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-ativo{background:#d4edda;color:#155724}
+.badge-trial{background:#fff3cd;color:#856404}
+.badge-bloq{background:#f8d7da;color:#721c24}
+.badge-venc{background:#f8d7da;color:#721c24}
+.cliente-info{font-size:12px;color:var(--cinza);margin-bottom:10px}
+.cliente-acoes{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ===== MODAL ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end}
+.modal-overlay.show{display:flex}
+.modal{background:var(--branco);border-radius:24px 24px 0 0;padding:24px;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-titulo{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--verde);margin-bottom:16px}
+
+/* ===== BLOQUEIO ===== */
+.bloqueio-tela{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-height(135deg,#1a3a2a,#2d6a4f);padding:32px;text-align:center;background:var(--verde)}
+.bloqueio-icon{font-size:64px;margin-bottom:16px}
+.bloqueio-titulo{font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--amarelo);margin-bottom:12px}
+.bloqueio-msg{color:rgba(255,255,255,0.8);font-size:15px;line-height:1.6;margin-bottom:24px}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--verde);color:white;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:999;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--cinza)}
+.empty-state .emoji{font-size:48px;margin-bottom:10px}
+
+/* ===== QTY ===== */
+.qty-btn{width:28px;height:28px;border-radius:8px;border:none;background:var(--verde-s);color:var(--verde);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+.qty-num{font-weight:700;font-size:15px;min-width:24px;text-align:center}
+
+/* ===== CONFIG ===== */
+.config-item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--borda)}
+.config-item:last-child{border-bottom:none}
+.config-label{font-weight:500;font-size:14px}
+.config-desc{font-size:12px;color:var(--cinza);margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- ============ TELA: SETUP FIREBASE ============ -->
+<div class="tela ativa" id="tela-setup">
+  <div class="auth-bg">
+    <div class="auth-logo">🌿 PDV<span>Sacolão</span></div>
+    <div class="auth-sub">Sistema de gestão para sacolões e mercearias</div>
+    <div class="auth-card">
+      <div class="auth-titulo">⚙️ Configurar Firebase</div>
+      <p style="font-size:13px;color:var(--cinza);margin-bottom:16px;line-height:1.6">
+        Cole aqui as configurações do seu projeto Firebase. Faça isso só uma vez!
+      </p>
+      <div class="campo">
+        <label>API Key</label>
+        <input type="text" id="cfg-apikey" placeholder="AIzaSy...">
+      </div>
+      <div class="campo">
+        <label>Auth Domain</label>
+        <input type="text" id="cfg-authdomain" placeholder="meu-projeto.firebaseapp.com">
+      </div>
+      <div class="campo">
+        <label>Database URL</label>
+        <input type="text" id="cfg-dburl" placeholder="https://meu-projeto-default-rtdb.firebaseio.com">
+      </div>
+      <div class="campo">
+        <label>Project ID</label>
+        <input type="text" id="cfg-projectid" placeholder="meu-projeto">
+      </div>
+      <button class="btn btn-verde" onclick="salvarConfig()" style="margin-bottom:12px">💾 Salvar e conectar</button>
+      <div style="background:var(--verde-s);border-radius:10px;padding:12px;font-size:12px;color:var(--cinza);line-height:1.7">
+        <b>Como pegar esses dados:</b><br>
+        1. Acesse <b>console.firebase.google.com</b><br>
+        2. Crie um projeto novo chamado <b>pdv-sacolao</b><br>
+        3. Clique em ⚙️ Configurações do projeto<br>
+        4. Em "Seus apps", clique em &lt;/&gt; (Web)<br>
+        5. Copie os dados do <b>firebaseConfig</b>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TELA: LOGIN ============ -->
+<div class="tela" id="tela-login">
+  <div class="auth-bg">
+    <div class="auth-logo">🌿 PDV<span>Sacolão</span></div>
+    <div class="auth-sub">Gestão inteligente para seu negócio</div>
+    <div class="auth-card" id="card-login">
+      <div class="trial-badge">🎁 7 dias grátis para novos clientes</div>
+      <div class="auth-titulo">Entrar na conta</div>
+      <div class="campo">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="seu@email.com">
+      </div>
+      <div class="campo">
+        <label>Senha</label>
+        <input type="password" id="login-senha" placeholder="••••••••">
+      </div>
+      <button class="btn btn-verde" onclick="fazerLogin()" style="margin-bottom:10px">🔑 Entrar</button>
+      <button class="btn btn-outline" onclick="mostrarCadastro()">📝 Criar conta grátis (7 dias)</button>
+      <div style="text-align:center;margin-top:12px">
+        <button class="btn-link" onclick="mostrarLoginAdmin()">👤 Entrar como administrador</button>
+      </div>
+    </div>
+
+    <!-- CADASTRO -->
+    <div class="auth-card" id="card-cadastro" style="display:none">
+      <div class="trial-badge">🎁 7 dias grátis — sem cartão</div>
+      <div class="auth-titulo">Criar conta</div>
+      <div class="campo">
+        <label>Nome do seu negócio</label>
+        <input type="text" id="cad-loja" placeholder="Ex: Sacolão do João">
+      </div>
+      <div class="campo">
+        <label>Seu nome</label>
+        <input type="text" id="cad-nome" placeholder="Seu nome completo">
+      </div>
+      <div class="campo">
+        <label>WhatsApp</label>
+        <input type="tel" id="cad-tel" placeholder="(31) 99999-9999">
+      </div>
+      <div class="campo">
+        <label>E-mail</label>
+        <input type="email" id="cad-email" placeholder="seu@email.com">
+      </div>
+      <div class="campo">
+        <label>Senha (mínimo 6 dígitos)</label>
+        <input type="password" id="cad-senha" placeholder="••••••••">
+      </div>
+      <button class="btn btn-laranja" onclick="criarConta()" style="margin-bottom:10px">✅ Criar conta e começar</button>
+      <button class="btn btn-outline" onclick="mostrarLogin()">← Já tenho conta</button>
+    </div>
+
+    <!-- LOGIN ADMIN -->
+    <div class="auth-card" id="card-admin-login" style="display:none">
+      <div class="auth-titulo">👤 Painel Admin</div>
+      <div class="campo">
+        <label>E-mail admin</label>
+        <input type="email" id="adm-email" placeholder="admin@pdvsacolao.com">
+      </div>
+      <div class="campo">
+        <label>Senha</label>
+        <input type="password" id="adm-senha" placeholder="••••••••">
+      </div>
+      <button class="btn btn-verde" onclick="loginAdmin()" style="margin-bottom:10px">🔑 Entrar como Admin</button>
+      <button class="btn btn-outline" onclick="mostrarLogin()">← Voltar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TELA: BLOQUEADO ============ -->
+<div class="tela" id="tela-bloqueado">
+  <div class="bloqueio-tela">
+    <div class="bloqueio-icon">🔒</div>
+    <div class="bloqueio-titulo">Acesso bloqueado</div>
+    <div class="bloqueio-msg" id="bloq-msg">Seu período de teste expirou. Entre em contato com o administrador para continuar usando o PDV Sacolão.</div>
+    <a id="bloq-wpp" href="https://wa.me/5531989892315" target="_blank" style="text-decoration:none;width:100%;max-width:320px">
+      <button class="btn btn-amarelo" style="width:100%">💬 Falar no WhatsApp</button>
+    </a>
+    <button class="btn btn-outline" onclick="fazerLogout()" style="margin-top:10px;color:white;border-color:rgba(255,255,255,0.3);max-width:320px;width:100%">← Sair</button>
+  </div>
+</div>
+
+<!-- ============ TELA: APP CLIENTE ============ -->
+<div class="tela" id="tela-app">
+  <div class="app-header">
+    <div class="app-header-top">
+      <div class="app-logo">🌿 PDV<span>Sacolão</span></div>
+      <div class="app-user">
+        <div class="app-user-nome" id="app-loja-nome">Minha Loja</div>
+        <div class="app-user-status" id="app-trial-status"></div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="tab-btn ativo" onclick="irPara('inicio')">🏠 Início</button>
+      <button class="tab-btn" onclick="irPara('vender')">🛒 Vender</button>
+      <button class="tab-btn" onclick="irPara('produtos')">📦 Produtos</button>
+      <button class="tab-btn" onclick="irPara('fiado')">🤝 Fiado</button>
+      <button class="tab-btn" onclick="irPara('relatorios')">📊 Relatórios</button>
+      <button class="tab-btn" onclick="irPara('config')">⚙️ Config</button>
+    </div>
+  </div>
+
+  <!-- INÍCIO -->
+  <div class="pagina ativa" id="pag-inicio">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-valor" id="st-hoje">R$ 0</div><div class="stat-label">Vendas hoje</div></div>
+      <div class="stat-card"><div class="stat-icon">🛒</div><div class="stat-valor" id="st-pedidos">0</div><div class="stat-label">Pedidos hoje</div></div>
+      <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-valor" id="st-prods">0</div><div class="stat-label">Produtos</div></div>
+      <div class="stat-card"><div class="stat-icon">🤝</div><div class="stat-valor" id="st-fiado">R$ 0</div><div class="stat-label">Total fiado</div></div>
+    </div>
+    <div class="card">
+      <div class="card-titulo">⚡ Ações rápidas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button class="btn btn-verde" onclick="irPara('vender')">🛒 Nova venda</button>
+        <button class="btn btn-amarelo" onclick="irPara('produtos')">➕ Cadastrar</button>
+        <button class="btn btn-outline" onclick="irPara('fiado')">🤝 Ver fiado</button>
+        <button class="btn btn-outline" onclick="irPara('relatorios')">📊 Relatório</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-titulo">⚠️ Estoque baixo</div>
+      <div id="lista-estoque-baixo"><div class="empty-state"><div class="emoji">✅</div><p>Estoque ok!</p></div></div>
+    </div>
+  </div>
+
+  <!-- VENDER -->
+  <div class="pagina" id="pag-vender">
+    <div class="card">
+      <div class="card-titulo">🛒 Vender produto</div>
+      <div style="background:var(--verde-s);border-radius:14px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase">🔍 Buscar produto</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <input class="campo" type="text" id="busca-venda" placeholder="Digite ou use 🎤 no teclado..." style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px;outline:none">
+          <button onclick="limparBusca()" style="width:40px;height:44px;border-radius:10px;border:none;background:#ddd;font-size:16px;cursor:pointer">✕</button>
+        </div>
+        <button class="btn btn-verde" onclick="filtrarProdutosVenda()" style="margin-bottom:6px">🔍 Buscar / Confirmar</button>
+        <div style="font-size:11px;color:var(--cinza);text-align:center">🎤 Use o microfone do teclado → depois toque em Buscar</div>
+      </div>
+      <div style="font-size:12px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase">📦 Produtos disponíveis</div>
+      <div id="lista-produtos-venda"></div>
+    </div>
+    <div class="card" id="card-carrinho" style="display:none">
+      <div class="card-titulo">🛒 Carrinho</div>
+      <div id="lista-carrinho"></div>
+      <div class="total-box"><div><div class="total-label">Total da compra</div></div><div class="total-valor" id="total-venda">R$ 0,00</div></div>
+      <div class="card-titulo" style="margin-top:4px">💳 Pagamento</div>
+      <div class="pgto-grid">
+        <button class="pgto-btn sel" id="pgto-dinheiro" onclick="selPgto('dinheiro')"><span class="icon">💵</span>Dinheiro</button>
+        <button class="pgto-btn" id="pgto-pix" onclick="selPgto('pix')"><span class="icon">📱</span>Pix</button>
+        <button class="pgto-btn" id="pgto-cartao" onclick="selPgto('cartao')"><span class="icon">💳</span>Cartão</button>
+        <button class="pgto-btn" id="pgto-fiado" onclick="selPgto('fiado')"><span class="icon">🤝</span>Fiado</button>
+      </div>
+      <div id="area-fiado" style="display:none;margin-bottom:12px">
+        <label style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase">Nome do cliente</label>
+        <input type="text" id="cliente-fiado" placeholder="Nome do cliente..." style="width:100%;margin-top:5px;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px">
+      </div>
+      <button class="btn btn-laranja" style="margin-bottom:10px;font-size:17px;padding:16px" onclick="finalizarVenda()">✅ FINALIZAR VENDA</button>
+      <button class="btn btn-outline" onclick="limparCarrinho()">🗑️ Limpar carrinho</button>
+    </div>
+  </div>
+
+  <!-- PRODUTOS -->
+  <div class="pagina" id="pag-produtos">
+    <div class="card">
+      <div class="card-titulo">➕ Cadastrar produto</div>
+      <div style="background:var(--verde-s);border-radius:12px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--cinza);line-height:1.6">
+        🎤 <b>Dica:</b> Toque no campo Nome → use o 🎤 do teclado para falar o nome
+      </div>
+      <div class="campo">
+        <label>Emoji do produto</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+          ${['🍌','🍅','🥕','🥬','🍊','🍋','🥦','🍇','🧅','🌽','🍓','🥭','🍍','🥝','🫐','🧄'].map(e=>`<button onclick="document.getElementById('prod-emoji').value='${e}'" style="font-size:24px;background:none;border:none;cursor:pointer">${e}</button>`).join('')}
+        </div>
+        <input type="text" id="prod-emoji" placeholder="🍎" maxlength="2" style="width:70px;padding:10px;border-radius:10px;border:1.5px solid var(--borda);font-size:18px;text-align:center">
+      </div>
+      <div class="campo"><label>Nome do produto</label><input type="text" id="prod-nome" placeholder="Ex: Banana prata"></div>
+      <div style="display:flex;gap:10px">
+        <div class="campo" style="flex:1"><label>Preço (R$)</label><input type="number" id="prod-preco" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="campo" style="flex:1"><label>Unidade</label>
+          <select id="prod-unidade" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px">
+            <option value="kg">kg</option><option value="unid">unid</option><option value="maço">maço</option><option value="dúzia">dúzia</option><option value="litro">litro</option><option value="pct">pacote</option>
+          </select>
+        </div>
+      </div>
+      <div class="campo"><label>Estoque</label><input type="number" id="prod-estoque" placeholder="Ex: 50" step="0.1" min="0"></div>
+      <button class="btn btn-verde" onclick="salvarProduto()">💾 Salvar produto</button>
+    </div>
+    <div class="card">
+      <div class="card-titulo">📦 Produtos cadastrados</div>
+      <input type="text" placeholder="🔍 Buscar..." id="busca-produto" oninput="renderProdutos(this.value)" style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px;margin-bottom:12px">
+      <div id="lista-produtos"></div>
+    </div>
+  </div>
+
+  <!-- FIADO -->
+  <div class="pagina" id="pag-fiado">
+    <div class="card">
+      <div class="card-titulo">💰 Total em fiado</div>
+      <div style="font-family:'Fraunces',serif;font-size:36px;font-weight:900;color:var(--laranja)" id="total-fiado-geral">R$ 0,00</div>
+      <div style="font-size:12px;color:var(--cinza);margin-top:4px" id="qtd-fiado">0 clientes</div>
+    </div>
+    <div class="card">
+      <div class="card-titulo">➕ Lançar fiado</div>
+      <div class="campo"><label>Nome do cliente</label><input type="text" id="fiado-nome" placeholder="Ex: João Silva"></div>
+      <div class="campo"><label>Valor (R$)</label><input type="number" id="fiado-valor" placeholder="0,00" step="0.01"></div>
+      <div class="campo"><label>Descrição</label><input type="text" id="fiado-desc" placeholder="Ex: Compra de hoje"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-laranja" style="flex:1" onclick="lancarFiado('debito')">➕ Dívida</button>
+        <button class="btn btn-verde" style="flex:1" onclick="lancarFiado('credito')">💵 Pagamento</button>
+      </div>
+    </div>
+    <div class="card"><div class="card-titulo">🤝 Clientes</div><div id="lista-fiado"></div></div>
+  </div>
+
+  <!-- RELATÓRIOS -->
+  <div class="pagina" id="pag-relatorios">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-valor" id="rel-hoje">R$ 0</div><div class="stat-label">Hoje</div></div>
+      <div class="stat-card"><div class="stat-icon">📆</div><div class="stat-valor" id="rel-semana">R$ 0</div><div class="stat-label">Semana</div></div>
+      <div class="stat-card"><div class="stat-icon">🗓️</div><div class="stat-valor" id="rel-mes">R$ 0</div><div class="stat-label">Mês</div></div>
+      <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-valor" id="rel-fiado">R$ 0</div><div class="stat-label">Fiado</div></div>
+    </div>
+    <div class="card"><div class="card-titulo">🏆 Mais vendidos</div><div id="mais-vendidos"></div></div>
+    <div class="card">
+      <div class="card-titulo">📋 Últimas vendas</div>
+      <div id="historico-vendas"></div>
+      <button class="btn btn-outline" style="margin-top:12px" onclick="exportarRelatorio()">📤 Compartilhar</button>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="pagina" id="pag-config">
+    <div class="card">
+      <div class="card-titulo">⚙️ Minha conta</div>
+      <div class="config-item">
+        <div><div class="config-label">Loja</div><div class="config-desc" id="cfg-loja-nome">—</div></div>
+      </div>
+      <div class="config-item">
+        <div><div class="config-label">E-mail</div><div class="config-desc" id="cfg-email">—</div></div>
+      </div>
+      <div class="config-item">
+        <div><div class="config-label">Status</div><div class="config-desc" id="cfg-status">—</div></div>
+      </div>
+      <div class="config-item">
+        <div><div class="config-label">Trial / Vencimento</div><div class="config-desc" id="cfg-vencimento">—</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-titulo">💳 Assinar / Renovar</div>
+      <p style="font-size:13px;color:var(--cinza);margin-bottom:14px">Fale no WhatsApp para assinar ou renovar seu plano.</p>
+      <a href="https://wa.me/5531989892315?text=Olá! Quero assinar o PDV Sacolão." target="_blank" style="text-decoration:none">
+        <button class="btn btn-verde">💬 Falar no WhatsApp</button>
+      </a>
+    </div>
+    <div class="card">
+      <button class="btn btn-outline" onclick="fazerLogout()">🚪 Sair da conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TELA: ADMIN ============ -->
+<div class="tela" id="tela-admin">
+  <div class="admin-header">
+    <div class="admin-titulo">🛠️ Painel Admin</div>
+    <div class="admin-sub">PDV Sacolão — Gestão de clientes</div>
+  </div>
+  <div style="padding:16px">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-valor" id="adm-total-clientes">0</div><div class="stat-label">Total clientes</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-valor" id="adm-ativos">0</div><div class="stat-label">Ativos</div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-valor" id="adm-trial">0</div><div class="stat-label">Em trial</div></div>
+      <div class="stat-card"><div class="stat-icon">🔒</div><div class="stat-valor" id="adm-bloq">0</div><div class="stat-label">Bloqueados</div></div>
+    </div>
+    <div class="card">
+      <div class="card-titulo">👥 Clientes</div>
+      <div id="lista-clientes"><div class="empty-state"><div class="emoji">👥</div><p>Carregando...</p></div></div>
+    </div>
+    <button class="btn btn-outline" onclick="fazerLogout()" style="margin-top:8px">🚪 Sair</button>
+  </div>
+</div>
+
+<!-- MODAL QUANTIDADE -->
+<div class="modal-overlay" id="modal-qty">
+  <div class="modal">
+    <div class="modal-titulo" id="mq-titulo">⚖️ Quantidade</div>
+    <input type="hidden" id="mq-id">
+    <div style="background:var(--verde-s);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:36px" id="mq-emoji">🥦</div>
+      <div style="font-weight:700;font-size:18px;margin-top:4px" id="mq-nome">Produto</div>
+      <div style="color:var(--cinza);font-size:13px" id="mq-preco-u">R$ 0,00 / kg</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="tab-unid" class="btn btn-verde btn-sm" style="flex:1" onclick="modoQty('unid')">📦 Unidade</button>
+      <button id="tab-peso" class="btn btn-outline btn-sm" style="flex:1" onclick="modoQty('peso')">⚖️ Peso</button>
+    </div>
+    <div id="mq-unid-area">
+      <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:16px">
+        <button onclick="qdelta(-1)" style="width:52px;height:52px;border-radius:50%;background:var(--verde-s);border:none;font-size:28px;font-weight:700;color:var(--verde);cursor:pointer">−</button>
+        <div style="text-align:center">
+          <div style="font-family:'Fraunces',serif;font-size:48px;font-weight:900;color:var(--verde);line-height:1" id="mq-num">1</div>
+          <div style="font-size:12px;color:var(--cinza)" id="mq-unid-label">unid</div>
+        </div>
+        <button onclick="qdelta(1)" style="width:52px;height:52px;border-radius:50%;background:var(--verde);border:none;font-size:28px;font-weight:700;color:white;cursor:pointer">+</button>
+      </div>
+    </div>
+    <div id="mq-peso-area" style="display:none">
+      <div class="campo"><label>Peso em gramas (ex: 500 = meio quilo)</label>
+        <input type="number" id="mq-gramas" placeholder="Ex: 500" min="1" step="50" oninput="atualizarPrev()" style="font-size:18px;text-align:center;font-weight:700">
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <button onclick="setG(250)" class="btn btn-outline btn-sm">250g</button>
+        <button onclick="setG(500)" class="btn btn-outline btn-sm">500g</button>
+        <button onclick="setG(750)" class="btn btn-outline btn-sm">750g</button>
+        <button onclick="setG(1000)" class="btn btn-outline btn-sm">1kg</button>
+        <button onclick="setG(1500)" class="btn btn-outline btn-sm">1,5kg</button>
+        <button onclick="setG(2000)" class="btn btn-outline btn-sm">2kg</button>
+      </div>
+    </div>
+    <div style="background:var(--verde);border-radius:12px;padding:14px;text-align:center;margin-bottom:14px">
+      <div style="color:rgba(255,255,255,0.7);font-size:12px">Total</div>
+      <div style="font-family:'Fraunces',serif;font-size:32px;font-weight:900;color:var(--amarelo)" id="mq-prev">R$ 0,00</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-verde" style="flex:2" onclick="confirmarQty()">✅ Adicionar</button>
+      <button class="btn btn-outline" style="flex:1" onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CUPOM -->
+<div class="modal-overlay" id="modal-cupom">
+  <div class="modal">
+    <div class="modal-titulo">🧾 Cupom</div>
+    <div class="cupom" id="cupom-content"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-verde" onclick="compartilharCupom()" style="flex:1">📤 Compartilhar</button>
+      <button class="btn btn-outline" onclick="fecharModal()" style="flex:1">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PRODUTO -->
+<div class="modal-overlay" id="modal-prod">
+  <div class="modal">
+    <div class="modal-titulo">✏️ Editar produto</div>
+    <input type="hidden" id="ep-id">
+    <div class="campo"><label>Emoji</label><input type="text" id="ep-emoji" maxlength="2" style="width:70px"></div>
+    <div class="campo"><label>Nome</label><input type="text" id="ep-nome"></div>
+    <div style="display:flex;gap:10px">
+      <div class="campo" style="flex:1"><label>Preço</label><input type="number" id="ep-preco" step="0.01"></div>
+      <div class="campo" style="flex:1"><label>Unidade</label>
+        <select id="ep-unidade" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px">
+          <option value="kg">kg</option><option value="unid">unid</option><option value="maço">maço</option><option value="dúzia">dúzia</option><option value="litro">litro</option><option value="pct">pacote</option>
+        </select>
+      </div>
+    </div>
+    <div class="campo"><label>Estoque</label><input type="number" id="ep-estoque" step="0.1"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-verde" onclick="salvarEdicao()" style="flex:1">💾 Salvar</button>
+      <button class="btn btn-outline" onclick="fecharModal()" style="flex:1">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== CONFIG FIREBASE =====================
+const CFG_KEY = 'pdvsacolao_firebase_config';
+let firebaseApp, auth, db;
+let usuarioAtual = null;
+let dadosUsuario = null;
+let carrinho = [];
+let metodoPgto = 'dinheiro';
+let ultimaVenda = null;
+let _vozItens = [];
+let mqId = null, mqModo = 'unid', mqQty = 1;
+
+// ===================== UTILS =====================
+function fmt(v){ return 'R$ ' + (v||0).toFixed(2).replace('.',','); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function hoje(){ return new Date().toLocaleDateString('pt-BR'); }
+function toast(msg,dur=2200){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+function mostrarTela(id){
+  document.querySelectorAll('.tela').forEach(t=>t.classList.remove('ativa'));
+  document.getElementById(id).classList.add('ativa');
+}
+function fecharModal(){
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));
+}
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) fecharModal(); });
+});
+
+// ===================== RELÓGIO =====================
+function tick(){
+  const a=new Date();
+  // Atualiza relógio se existir
+}
+setInterval(tick,1000);
+
+// ===================== FIREBASE SETUP =====================
+function salvarConfig(){
+  const cfg = {
+    apiKey: document.getElementById('cfg-apikey').value.trim(),
+    authDomain: document.getElementById('cfg-authdomain').value.trim(),
+    databaseURL: document.getElementById('cfg-dburl').value.trim(),
+    projectId: document.getElementById('cfg-projectid').value.trim(),
+  };
+  if(!cfg.apiKey||!cfg.authDomain||!cfg.databaseURL||!cfg.projectId){
+    toast('⚠️ Preencha todos os campos'); return;
+  }
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  iniciarFirebase(cfg);
+}
+
+function iniciarFirebase(cfg){
+  try{
+    if(firebase.apps.length) firebase.apps.forEach(a=>a.delete());
+    firebaseApp = firebase.initializeApp(cfg);
+    auth = firebase.auth();
+    db = firebase.database();
+    toast('✅ Firebase conectado!');
+    mostrarTela('tela-login');
+    ouvirAuth();
+  } catch(e){
+    toast('❌ Erro: '+e.message);
+  }
+}
+
+// ===================== AUTH =====================
+function ouvirAuth(){
+  auth.onAuthStateChanged(async user=>{
+    if(!user){ mostrarTela('tela-login'); return; }
+    usuarioAtual = user;
+    // Verifica se é admin
+    const snap = await db.ref('admin').once('value');
+    const adminEmail = snap.val()?.email;
+    if(user.email === adminEmail){
+      mostrarTela('tela-admin');
+      carregarClientes();
+      return;
+    }
+    // Carrega dados do usuário
+    const snapUser = await db.ref('usuarios/'+user.uid).once('value');
+    dadosUsuario = snapUser.val();
+    if(!dadosUsuario){ auth.signOut(); return; }
+    // Verifica bloqueio e trial
+    const status = verificarStatus(dadosUsuario);
+    if(status.bloqueado){
+      document.getElementById('bloq-msg').textContent = status.msg;
+      mostrarTela('tela-bloqueado');
+      return;
+    }
+    // Mostra app
+    iniciarApp(dadosUsuario, status);
+  });
+}
+
+function verificarStatus(dados){
+  const agora = Date.now();
+  if(dados.bloqueado_manual) return {bloqueado:true, msg:'Acesso bloqueado pelo administrador. Entre em contato para regularizar.'};
+  if(dados.vencimento && agora > dados.vencimento) return {bloqueado:true, msg:'Seu acesso expirou. Renove sua assinatura para continuar usando o PDV Sacolão.'};
+  // Trial
+  if(dados.trial_fim && agora > dados.trial_fim && !dados.pago) return {bloqueado:true, msg:'Seu período de teste de 7 dias expirou. Assine para continuar!'};
+  const diasRestantes = dados.trial_fim ? Math.ceil((dados.trial_fim - agora)/(1000*60*60*24)) : null;
+  return {bloqueado:false, diasRestantes, pago: dados.pago};
+}
+
+function iniciarApp(dados, status){
+  mostrarTela('tela-app');
+  document.getElementById('app-loja-nome').textContent = dados.loja || 'Minha Loja';
+  document.getElementById('cfg-loja-nome').textContent = dados.loja || '—';
+  document.getElementById('cfg-email').textContent = usuarioAtual.email;
+  document.getElementById('cfg-status').textContent = dados.pago ? '✅ Ativo' : '⏳ Trial';
+  if(status.diasRestantes !== null && !status.pago){
+    const txt = status.diasRestantes > 0 ? `⏳ ${status.diasRestantes} dia(s) de teste restante(s)` : '⏰ Trial encerrado';
+    document.getElementById('app-trial-status').textContent = txt;
+    document.getElementById('cfg-vencimento').textContent = txt;
+  } else {
+    document.getElementById('app-trial-status').textContent = dados.pago ? '✅ Plano ativo' : '';
+    if(dados.vencimento) document.getElementById('cfg-vencimento').textContent = new Date(dados.vencimento).toLocaleDateString('pt-BR');
+  }
+  // Ouve dados em tempo real
+  ouvirDados();
+  renderProdutosVenda();
+  atualizarDashboard();
+}
+
+// ===================== CADASTRO / LOGIN =====================
+async function criarConta(){
+  const loja = document.getElementById('cad-loja').value.trim();
+  const nome = document.getElementById('cad-nome').value.trim();
+  const tel = document.getElementById('cad-tel').value.trim();
+  const email = document.getElementById('cad-email').value.trim();
+  const senha = document.getElementById('cad-senha').value;
+  if(!loja||!nome||!email||!senha){ toast('⚠️ Preencha todos os campos'); return; }
+  if(senha.length < 6){ toast('⚠️ Senha deve ter ao menos 6 dígitos'); return; }
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(email, senha);
+    const uid = cred.user.uid;
+    const agora = Date.now();
+    const trial_fim = agora + 7*24*60*60*1000; // 7 dias
+    await db.ref('usuarios/'+uid).set({
+      loja, nome, tel, email, uid,
+      criado: agora, trial_fim, pago: false,
+      bloqueado_manual: false,
+      produtos: {}, vendas: {}, fiado: {}
+    });
+    toast('✅ Conta criada! Bom uso por 7 dias grátis!');
+  } catch(e){
+    if(e.code==='auth/email-already-in-use') toast('❌ E-mail já cadastrado');
+    else toast('❌ Erro: '+e.message);
+  }
+}
+
+async function fazerLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  if(!email||!senha){ toast('⚠️ Preencha e-mail e senha'); return; }
+  try{
+    await auth.signInWithEmailAndPassword(email, senha);
+  } catch(e){
+    if(e.code==='auth/wrong-password'||e.code==='auth/user-not-found') toast('❌ E-mail ou senha incorretos');
+    else toast('❌ Erro: '+e.message);
+  }
+}
+
+async function loginAdmin(){
+  const email = document.getElementById('adm-email').value.trim();
+  const senha = document.getElementById('adm-senha').value;
+  if(!email||!senha){ toast('⚠️ Preencha os campos'); return; }
+  try{
+    await auth.signInWithEmailAndPassword(email, senha);
+  } catch(e){
+    toast('❌ Credenciais inválidas');
+  }
+}
+
+async function fazerLogout(){
+  await auth.signOut();
+  carrinho=[];
+  mostrarTela('tela-login');
+}
+
+function mostrarCadastro(){ document.getElementById('card-login').style.display='none'; document.getElementById('card-cadastro').style.display='block'; document.getElementById('card-admin-login').style.display='none'; }
+function mostrarLogin(){ document.getElementById('card-login').style.display='block'; document.getElementById('card-cadastro').style.display='none'; document.getElementById('card-admin-login').style.display='none'; }
+function mostrarLoginAdmin(){ document.getElementById('card-login').style.display='none'; document.getElementById('card-cadastro').style.display='none'; document.getElementById('card-admin-login').style.display='block'; }
+
+// ===================== FIREBASE DADOS =====================
+function refUser(path){
+  return db.ref('usuarios/'+usuarioAtual.uid+'/'+path);
+}
+
+function ouvirDados(){
+  // Ouve dados em tempo real
+  refUser('produtos').on('value', snap=>{
+    const val = snap.val() || {};
+    dadosUsuario.produtos = val;
+    renderProdutos();
+    renderProdutosVenda();
+    atualizarDashboard();
+  });
+  refUser('vendas').on('value', snap=>{
+    dadosUsuario.vendas = snap.val() || {};
+    atualizarDashboard();
+  });
+  refUser('fiado').on('value', snap=>{
+    dadosUsuario.fiado = snap.val() || {};
+    renderFiado();
+    atualizarDashboard();
+  });
+}
+
+// ===================== NAVEGAÇÃO =====================
+function irPara(pag){
+  document.querySelectorAll('.pagina').forEach(p=>p.classList.remove('ativa'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('ativo'));
+  document.getElementById('pag-'+pag).classList.add('ativa');
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    if(b.getAttribute('onclick')?.includes("'"+pag+"'")) b.classList.add('ativo');
+  });
+  if(pag==='inicio') atualizarDashboard();
+  if(pag==='vender') renderProdutosVenda();
+  if(pag==='produtos') renderProdutos();
+  if(pag==='fiado') renderFiado();
+  if(pag==='relatorios') renderRelatorios();
+}
+
+// ===================== DASHBOARD =====================
+function atualizarDashboard(){
+  if(!dadosUsuario) return;
+  const vendas = Object.values(dadosUsuario.vendas||{});
+  const diaHoje = hoje();
+  const vendasHoje = vendas.filter(v=>v.dataFmt===diaHoje&&v.pgto!=='fiado');
+  const totalHoje = vendasHoje.reduce((s,v)=>s+v.total,0);
+  const totalFiado = Object.values(dadosUsuario.fiado||{}).reduce((s,c)=>s+(c.saldo||0),0);
+  document.getElementById('st-hoje').textContent=fmt(totalHoje);
+  document.getElementById('st-pedidos').textContent=vendasHoje.length;
+  document.getElementById('st-prods').textContent=Object.keys(dadosUsuario.produtos||{}).length;
+  document.getElementById('st-fiado').textContent=fmt(totalFiado);
+  // Estoque baixo
+  const prods = Object.values(dadosUsuario.produtos||{});
+  const baixo = prods.filter(p=>p.estoque<=5);
+  const lista = document.getElementById('lista-estoque-baixo');
+  if(!baixo.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">✅</div><p>Estoque ok!</p></div>'; return; }
+  lista.innerHTML = baixo.map(p=>`<div class="prod-item"><div class="prod-emoji">${p.emoji}</div><div class="prod-info"><div class="prod-nome">${p.nome}</div><div class="prod-estoque estoque-baixo">${p.estoque===0?'🚫 Sem estoque':'⚠️ Apenas '+p.estoque+' '+p.unidade}</div></div></div>`).join('');
+}
+
+// ===================== PRODUTOS =====================
+async function salvarProduto(){
+  const emoji = document.getElementById('prod-emoji').value||'🥦';
+  const nome = document.getElementById('prod-nome').value.trim();
+  const preco = parseFloat(document.getElementById('prod-preco').value);
+  const unidade = document.getElementById('prod-unidade').value;
+  const estoque = parseFloat(document.getElementById('prod-estoque').value)||0;
+  if(!nome||isNaN(preco)||preco<=0){ toast('⚠️ Preencha nome e preço'); return; }
+  const id = uid();
+  await refUser('produtos/'+id).set({id,emoji,nome,preco,unidade,estoque,vendas:0});
+  document.getElementById('prod-emoji').value='';
+  document.getElementById('prod-nome').value='';
+  document.getElementById('prod-preco').value='';
+  document.getElementById('prod-estoque').value='';
+  toast('✅ '+emoji+' '+nome+' cadastrado!');
+}
+
+function renderProdutos(filtro=''){
+  if(!dadosUsuario) return;
+  const lista = document.getElementById('lista-produtos');
+  const prods = Object.values(dadosUsuario.produtos||{}).filter(p=>!filtro||p.nome.toLowerCase().includes(filtro.toLowerCase()));
+  if(!prods.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">📦</div><p>Nenhum produto cadastrado</p></div>'; return; }
+  lista.innerHTML=prods.map(p=>`<div class="prod-item"><div class="prod-emoji">${p.emoji}</div><div class="prod-info"><div class="prod-nome">${p.nome}</div><div class="prod-detalhe">${fmt(p.preco)} / ${p.unidade}</div><div class="prod-estoque ${p.estoque<=5?'estoque-baixo':''}">Estoque: ${p.estoque} ${p.unidade}</div></div><div class="prod-acoes"><button class="btn-icon" onclick="editarProd('${p.id}')">✏️</button><button class="btn-icon danger" onclick="excluirProd('${p.id}')">🗑️</button></div></div>`).join('');
+}
+
+function editarProd(id){
+  const p=Object.values(dadosUsuario.produtos||{}).find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('ep-id').value=id;
+  document.getElementById('ep-emoji').value=p.emoji;
+  document.getElementById('ep-nome').value=p.nome;
+  document.getElementById('ep-preco').value=p.preco;
+  document.getElementById('ep-unidade').value=p.unidade;
+  document.getElementById('ep-estoque').value=p.estoque;
+  document.getElementById('modal-prod').classList.add('show');
+}
+
+async function salvarEdicao(){
+  const id=document.getElementById('ep-id').value;
+  await refUser('produtos/'+id).update({
+    emoji:document.getElementById('ep-emoji').value,
+    nome:document.getElementById('ep-nome').value,
+    preco:parseFloat(document.getElementById('ep-preco').value),
+    unidade:document.getElementById('ep-unidade').value,
+    estoque:parseFloat(document.getElementById('ep-estoque').value)||0
+  });
+  fecharModal(); toast('✅ Produto atualizado!');
+}
+
+async function excluirProd(id){
+  if(!confirm('Excluir este produto?')) return;
+  await refUser('produtos/'+id).remove();
+  toast('🗑️ Removido');
+}
+
+// ===================== VENDA =====================
+function renderProdutosVenda(filtro=''){
+  const lista=document.getElementById('lista-produtos-venda');
+  if(!dadosUsuario){ lista.innerHTML=''; return; }
+  const prods=Object.values(dadosUsuario.produtos||{}).filter(p=>!filtro||p.nome.toLowerCase().includes(filtro));
+  if(!Object.keys(dadosUsuario.produtos||{}).length){ lista.innerHTML='<div class="empty-state"><div class="emoji">📦</div><p>Cadastre produtos em <b>Produtos</b> primeiro</p></div>'; return; }
+  if(!prods.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">🔍</div><p>Nenhum produto encontrado para "<b>'+filtro+'</b>"</p></div>'; return; }
+  lista.innerHTML=prods.map(p=>`<div class="pv-item" onclick="abrirQty('${p.id}')"><div class="pv-esq"><span style="font-size:24px">${p.emoji}</span><div><div class="pv-nome">${p.nome}</div><div class="pv-preco">${fmt(p.preco)} / ${p.unidade}</div></div></div><button class="pv-add">+</button></div>`).join('');
+}
+
+let _vozItensLocal=[];
+function filtrarProdutosVenda(){
+  const texto=(document.getElementById('busca-venda').value||'').toLowerCase().trim();
+  if(!texto){ renderProdutosVenda(''); return; }
+  const itens=interpretarVoz(texto);
+  if(itens.length>0) mostrarPreviewVoz(itens);
+  else renderProdutosVenda(texto);
+}
+
+function interpretarVoz(texto){
+  const nums={'um':1,'uma':1,'dois':2,'duas':2,'três':3,'tres':3,'quatro':4,'cinco':5,'seis':6,'sete':7,'oito':8,'nove':9,'dez':10,'meio':0.5,'meia':0.5};
+  let t=texto;
+  Object.entries(nums).forEach(([p,v])=>{ t=t.replace(new RegExp('\\b'+p+'\\b','g'),v+' '); });
+  t=t.replace(/(\d+),(\d+)/g,'$1.$2');
+  const res=[];
+  Object.values(dadosUsuario.produtos||{}).forEach(prod=>{
+    const np=prod.nome.toLowerCase();
+    const pals=np.split(' ');
+    const aparece=pals.some(pal=>pal.length>2&&t.includes(pal));
+    if(!aparece) return;
+    const pal=pals.find(p=>p.length>2&&t.includes(p));
+    const idx=t.indexOf(pal);
+    const trecho=t.substring(Math.max(0,idx-30),idx+np.length+5);
+    let qty=1,descQty='';
+    const mKg=trecho.match(/(\d+\.?\d*)\s*(?:kg|quilo|quilos|kilo)/);
+    const mG=trecho.match(/(\d+)\s*(?:g|gramas|grama)\b/);
+    const mN=trecho.match(/(\d+\.?\d*)\s*/);
+    if(mKg){ qty=parseFloat(mKg[1]); descQty=qty%1===0?qty+' kg':qty.toFixed(2).replace('.',',')+' kg'; }
+    else if(mG){ qty=parseFloat(mG[1])/1000; descQty=parseFloat(mG[1])+'g'; }
+    else if(mN&&parseFloat(mN[1])>0){ qty=parseFloat(mN[1]); descQty=qty+' '+prod.unidade; }
+    else { qty=1; descQty='1 '+prod.unidade; }
+    res.push({prod,qty,descQty,total:prod.preco*qty});
+  });
+  return res;
+}
+
+function mostrarPreviewVoz(itens){
+  _vozItensLocal=itens;
+  const lista=document.getElementById('lista-produtos-venda');
+  const total=itens.reduce((s,i)=>s+i.total,0);
+  lista.innerHTML=`<div style="background:var(--verde-s);border-radius:12px;padding:14px;margin-bottom:10px">
+    <div style="font-weight:700;color:var(--verde);margin-bottom:10px">🎤 Entendi:</div>
+    ${itens.map(i=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--borda)">
+      <div><span style="font-size:18px">${i.prod.emoji}</span> <b>${i.prod.nome}</b><br><span style="font-size:12px;color:var(--cinza)">${i.descQty} × ${fmt(i.prod.preco)}/${i.prod.unidade}</span></div>
+      <span style="font-family:'Fraunces',serif;font-weight:700;color:var(--verde)">${fmt(i.total)}</span>
+    </div>`).join('')}
+    <div style="display:flex;justify-content:space-between;font-weight:700;margin-top:10px"><span>Total:</span><span style="color:var(--laranja);font-family:'Fraunces',serif">${fmt(total)}</span></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px">
+    <button class="btn btn-laranja" style="flex:2" onclick="addTudoVoz()">✅ Confirmar tudo</button>
+    <button class="btn btn-outline" style="flex:1" onclick="limparBusca()">✕</button>
+  </div>
+  <button class="btn btn-outline" style="font-size:13px" onclick="renderProdutosVenda('')">📋 Ver todos</button>`;
+}
+
+function addTudoVoz(){
+  _vozItensLocal.forEach(item=>{
+    carrinho.push({id:item.prod.id,emoji:item.prod.emoji,nome:item.prod.nome,preco:item.prod.preco,unidade:item.prod.unidade,qty:item.qty,descQty:item.descQty,total:item.prod.preco*item.qty});
+  });
+  limparBusca(); renderCarrinho();
+  toast('✅ '+_vozItensLocal.length+' item(s) adicionado(s)!',2000);
+  _vozItensLocal=[];
+  setTimeout(()=>document.getElementById('card-carrinho')?.scrollIntoView({behavior:'smooth'}),300);
+}
+
+function limparBusca(){ document.getElementById('busca-venda').value=''; renderProdutosVenda(); }
+
+// MODAL QTY
+function abrirQty(id){
+  const p=Object.values(dadosUsuario.produtos||{}).find(x=>x.id===id);
+  if(!p) return;
+  mqId=id; mqQty=1;
+  document.getElementById('mq-id').value=id;
+  document.getElementById('mq-emoji').textContent=p.emoji;
+  document.getElementById('mq-nome').textContent=p.nome;
+  document.getElementById('mq-preco-u').textContent=fmt(p.preco)+' / '+p.unidade;
+  document.getElementById('mq-num').textContent='1';
+  document.getElementById('mq-unid-label').textContent=p.unidade;
+  document.getElementById('mq-gramas').value='';
+  const isPeso=['kg','litro'].includes(p.unidade);
+  modoQty(isPeso?'peso':'unid');
+  if(isPeso) setG(1000);
+  document.getElementById('modal-qty').classList.add('show');
+}
+
+function modoQty(modo){
+  mqModo=modo;
+  document.getElementById('mq-unid-area').style.display=modo==='unid'?'block':'none';
+  document.getElementById('mq-peso-area').style.display=modo==='peso'?'block':'none';
+  document.getElementById('tab-unid').className='btn btn-sm '+(modo==='unid'?'btn-verde':'btn-outline');
+  document.getElementById('tab-peso').className='btn btn-sm '+(modo==='peso'?'btn-verde':'btn-outline');
+  document.getElementById('tab-unid').style.flex='1';
+  document.getElementById('tab-peso').style.flex='1';
+  atualizarPrev();
+}
+
+function qdelta(d){ mqQty=Math.max(1,mqQty+d); document.getElementById('mq-num').textContent=mqQty; atualizarPrev(); }
+function setG(g){ document.getElementById('mq-gramas').value=g; atualizarPrev(); }
+function atualizarPrev(){
+  const p=Object.values(dadosUsuario.produtos||{}).find(x=>x.id===mqId);
+  if(!p) return;
+  let total=mqModo==='unid'?p.preco*mqQty:p.preco*((parseFloat(document.getElementById('mq-gramas').value)||0)/1000);
+  document.getElementById('mq-prev').textContent=fmt(total);
+}
+
+function confirmarQty(){
+  const p=Object.values(dadosUsuario.produtos||{}).find(x=>x.id===mqId);
+  if(!p) return;
+  let qty,descQty;
+  if(mqModo==='unid'){ qty=mqQty; descQty=mqQty+' '+p.unidade; }
+  else { const g=parseFloat(document.getElementById('mq-gramas').value)||0; if(g<=0){toast('⚠️ Informe o peso');return;} qty=g/1000; descQty=g>=1000?(g/1000).toFixed(2).replace('.',',')+' kg':g+'g'; }
+  carrinho.push({id:mqId,emoji:p.emoji,nome:p.nome,preco:p.preco,unidade:p.unidade,qty,descQty,total:p.preco*qty});
+  fecharModal(); renderCarrinho();
+  toast(p.emoji+' '+p.nome+' — '+descQty+' → '+fmt(p.preco*qty),1800);
+}
+
+function renderCarrinho(){
+  const card=document.getElementById('card-carrinho');
+  if(!carrinho.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  document.getElementById('lista-carrinho').innerHTML=carrinho.map((c,i)=>`<div class="carr-item"><span style="font-size:22px">${c.emoji}</span><div class="carr-nome"><div>${c.nome}</div><div>${c.descQty||c.qty+' '+c.unidade}</div></div><div style="display:flex;gap:6px"><button class="btn-icon danger" onclick="removerItem(${i})">🗑️</button></div><div class="carr-total">${fmt(c.preco*c.qty)}</div></div>`).join('');
+  const total=carrinho.reduce((s,c)=>s+c.preco*c.qty,0);
+  document.getElementById('total-venda').textContent=fmt(total);
+}
+
+function removerItem(i){ carrinho.splice(i,1); renderCarrinho(); }
+function limparCarrinho(){ carrinho=[]; document.getElementById('busca-venda').value=''; renderCarrinho(); renderProdutosVenda(); }
+
+function selPgto(tipo){
+  metodoPgto=tipo;
+  document.querySelectorAll('.pgto-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('pgto-'+tipo).classList.add('sel');
+  document.getElementById('area-fiado').style.display=tipo==='fiado'?'block':'none';
+}
+
+async function finalizarVenda(){
+  if(!carrinho.length){ toast('⚠️ Carrinho vazio!'); return; }
+  const total=carrinho.reduce((s,c)=>s+c.preco*c.qty,0);
+  const nomeCli=metodoPgto==='fiado'?document.getElementById('cliente-fiado').value.trim():'';
+  if(metodoPgto==='fiado'&&!nomeCli){ toast('⚠️ Informe o nome do cliente'); return; }
+  const venda={id:uid(),data:new Date().toISOString(),dataFmt:hoje(),itens:[...carrinho],total,pgto:metodoPgto,cliente:nomeCli};
+  await refUser('vendas/'+venda.id).set(venda);
+  // Atualiza estoque
+  for(const c of carrinho){
+    const p=Object.values(dadosUsuario.produtos||{}).find(x=>x.id===c.id);
+    if(p){ await refUser('produtos/'+c.id+'/estoque').set(Math.max(0,(p.estoque||0)-c.qty)); }
+  }
+  // Fiado
+  if(metodoPgto==='fiado'&&nomeCli){
+    const fKey=nomeCli.replace(/\s+/g,'_').toLowerCase();
+    const snapF=await refUser('fiado/'+fKey).once('value');
+    const fAtual=snapF.val()||{nome:nomeCli,saldo:0,historico:[]};
+    fAtual.saldo=(fAtual.saldo||0)+total;
+    if(!fAtual.historico) fAtual.historico=[];
+    fAtual.historico.push({data:hoje(),valor:total,tipo:'debito',desc:'Compra'});
+    await refUser('fiado/'+fKey).set(fAtual);
+  }
+  ultimaVenda=venda;
+  mostrarCupom(venda);
+  limparCarrinho();
+}
+
+// ===================== CUPOM =====================
+function mostrarCupom(v){
+  const itens=v.itens.map(i=>`<div class="cupom-item"><span>${i.emoji} ${i.nome} (${i.descQty||i.qty+' '+i.unidade})</span><span>${fmt(i.preco*i.qty)}</span></div>`).join('');
+  document.getElementById('cupom-content').innerHTML=`<div style="text-align:center;margin-bottom:12px"><div class="cupom-loja">🌿 ${dadosUsuario.loja||'PDV Sacolão'}</div><div style="font-size:12px;color:var(--cinza)">${v.dataFmt}</div></div><div class="cupom-linha"></div>${itens}<div class="cupom-linha"></div><div class="cupom-total"><span>TOTAL</span><span>${fmt(v.total)}</span></div><div style="font-size:12px;color:var(--cinza);margin-top:8px">Pagamento: ${v.pgto.toUpperCase()}${v.cliente?' • '+v.cliente:''}</div><div style="text-align:center;font-size:11px;color:var(--cinza);margin-top:12px">Obrigado! 💚</div>`;
+  document.getElementById('modal-cupom').classList.add('show');
+}
+
+function compartilharCupom(){
+  if(!ultimaVenda) return;
+  const v=ultimaVenda;
+  const txt=`🌿 ${dadosUsuario.loja||'PDV Sacolão'}\n📅 ${v.dataFmt}\n\n`+v.itens.map(i=>`${i.emoji} ${i.nome} (${i.descQty||i.qty+' '+i.unidade}) = ${fmt(i.preco*i.qty)}`).join('\n')+`\n\n💰 TOTAL: ${fmt(v.total)}\n💳 ${v.pgto.toUpperCase()}${v.cliente?' • '+v.cliente:''}\n\nObrigado! 💚`;
+  if(navigator.share) navigator.share({title:'Cupom',text:txt}).catch(()=>{});
+  else navigator.clipboard?.writeText(txt).then(()=>toast('📋 Cupom copiado!'));
+}
+
+// ===================== FIADO =====================
+async function lancarFiado(tipo){
+  const nome=document.getElementById('fiado-nome').value.trim();
+  const valor=parseFloat(document.getElementById('fiado-valor').value);
+  const desc=document.getElementById('fiado-desc').value.trim()||(tipo==='credito'?'Pagamento':'Compra');
+  if(!nome||isNaN(valor)||valor<=0){ toast('⚠️ Preencha nome e valor'); return; }
+  const fKey=nome.replace(/\s+/g,'_').toLowerCase();
+  const snap=await refUser('fiado/'+fKey).once('value');
+  const fat=snap.val()||{nome,saldo:0,historico:[]};
+  fat.saldo=Math.max(0,(fat.saldo||0)+(tipo==='debito'?valor:-valor));
+  if(!fat.historico) fat.historico=[];
+  fat.historico.push({data:hoje(),valor,tipo,desc});
+  await refUser('fiado/'+fKey).set(fat);
+  document.getElementById('fiado-nome').value='';
+  document.getElementById('fiado-valor').value='';
+  document.getElementById('fiado-desc').value='';
+  toast(tipo==='debito'?'➕ Fiado lançado!':'💵 Pagamento registrado!');
+}
+
+function renderFiado(){
+  if(!dadosUsuario) return;
+  const clis=Object.values(dadosUsuario.fiado||{}).filter(c=>c.saldo>0);
+  const total=clis.reduce((s,c)=>s+(c.saldo||0),0);
+  document.getElementById('total-fiado-geral').textContent=fmt(total);
+  document.getElementById('qtd-fiado').textContent=clis.length+' cliente(s)';
+  const lista=document.getElementById('lista-fiado');
+  if(!clis.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">🤝</div><p>Sem fiado em aberto</p></div>'; return; }
+  lista.innerHTML=clis.sort((a,b)=>b.saldo-a.saldo).map(c=>`<div class="fiado-item"><div class="fiado-header"><div class="fiado-nome">👤 ${c.nome}</div><div class="fiado-divida">${fmt(c.saldo)}</div></div><div style="font-size:11px;color:var(--cinza)">Último: ${c.historico?.slice(-1)[0]?.data||'—'}</div><div class="fiado-acoes"><button class="btn btn-outline btn-sm" onclick="preencherFiado('${c.nome}')">💵 Pagamento</button><button class="btn btn-outline btn-sm" onclick="alert('Histórico de ${c.nome}:\\n\\n'+(${JSON.stringify(c.historico||[])}).slice(-10).reverse().map(h=>h.data+' | '+(h.tipo==='debito'?'➕':'💵')+' R$ '+h.valor.toFixed(2)+' - '+h.desc).join('\\n'))">📋 Histórico</button></div></div>`).join('');
+}
+
+function preencherFiado(nome){ document.getElementById('fiado-nome').value=nome; toast('💵 Informe o valor do pagamento'); }
+
+// ===================== RELATÓRIOS =====================
+function renderRelatorios(){
+  if(!dadosUsuario) return;
+  const agora=new Date();
+  const diaHoje=hoje();
+  const inicioSemana=new Date(agora); inicioSemana.setDate(agora.getDate()-agora.getDay());
+  const inicioMes=new Date(agora.getFullYear(),agora.getMonth(),1);
+  const vendas=Object.values(dadosUsuario.vendas||{}).filter(v=>v.pgto!=='fiado');
+  const h=vendas.filter(v=>v.dataFmt===diaHoje).reduce((s,v)=>s+v.total,0);
+  const s=vendas.filter(v=>new Date(v.data)>=inicioSemana).reduce((s,v)=>s+v.total,0);
+  const m=vendas.filter(v=>new Date(v.data)>=inicioMes).reduce((s,v)=>s+v.total,0);
+  const f=Object.values(dadosUsuario.fiado||{}).reduce((s,c)=>s+(c.saldo||0),0);
+  document.getElementById('rel-hoje').textContent=fmt(h);
+  document.getElementById('rel-semana').textContent=fmt(s);
+  document.getElementById('rel-mes').textContent=fmt(m);
+  document.getElementById('rel-fiado').textContent=fmt(f);
+  // Mais vendidos
+  const cont={};
+  Object.values(dadosUsuario.vendas||{}).forEach(v=>v.itens?.forEach(i=>{ cont[i.nome]=cont[i.nome]||{nome:i.nome,emoji:i.emoji,qty:0,total:0}; cont[i.nome].qty+=i.qty; cont[i.nome].total+=i.preco*i.qty; }));
+  const top=Object.values(cont).sort((a,b)=>b.qty-a.qty).slice(0,5);
+  document.getElementById('mais-vendidos').innerHTML=!top.length?'<div class="empty-state"><div class="emoji">📊</div><p>Sem vendas ainda</p></div>':top.map((p,i)=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--borda)"><div><b>${['🥇','🥈','🥉','4️⃣','5️⃣'][i]} ${p.emoji} ${p.nome}</b><div style="font-size:12px;color:var(--cinza)">${p.qty.toFixed(2)} vendidos</div></div><span style="font-family:'Fraunces',serif;font-weight:700;color:var(--verde)">${fmt(p.total)}</span></div>`).join('');
+  // Histórico
+  const hist=Object.values(dadosUsuario.vendas||{}).sort((a,b)=>new Date(b.data)-new Date(a.data)).slice(0,20);
+  document.getElementById('historico-vendas').innerHTML=!hist.length?'<div class="empty-state"><div class="emoji">🛒</div><p>Sem vendas</p></div>':hist.map(v=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--borda)"><div style="font-size:13px"><b>${v.itens?.length||0} item(s)</b> • ${v.pgto.toUpperCase()}<div style="font-size:11px;color:var(--cinza)">${v.dataFmt}</div></div><span style="font-family:'Fraunces',serif;font-weight:700;color:var(--verde);font-size:15px">${fmt(v.total)}</span></div>`).join('');
+}
+
+function exportarRelatorio(){
+  const txt=`📊 RELATÓRIO PDV SACOLÃO\n${dadosUsuario?.loja||''}\n${new Date().toLocaleDateString('pt-BR')}\n\nHoje: ${document.getElementById('rel-hoje').textContent}\nSemana: ${document.getElementById('rel-semana').textContent}\nMês: ${document.getElementById('rel-mes').textContent}\nFiado em aberto: ${document.getElementById('rel-fiado').textContent}`;
+  if(navigator.share) navigator.share({title:'Relatório PDV Sacolão',text:txt}).catch(()=>{});
+  else navigator.clipboard?.writeText(txt).then(()=>toast('📋 Copiado!'));
+}
+
+// ===================== ADMIN =====================
+function carregarClientes(){
+  db.ref('usuarios').on('value', snap=>{
+    const todos=snap.val()||{};
+    const lista=Object.values(todos);
+    const agora=Date.now();
+    let ativos=0,trial=0,bloq=0;
+    lista.forEach(c=>{
+      const bl=c.bloqueado_manual||(c.trial_fim&&agora>c.trial_fim&&!c.pago)||(c.vencimento&&agora>c.vencimento);
+      if(bl) bloq++;
+      else if(c.pago) ativos++;
+      else trial++;
+    });
+    document.getElementById('adm-total-clientes').textContent=lista.length;
+    document.getElementById('adm-ativos').textContent=ativos;
+    document.getElementById('adm-trial').textContent=trial;
+    document.getElementById('adm-bloq').textContent=bloq;
+    const div=document.getElementById('lista-clientes');
+    if(!lista.length){ div.innerHTML='<div class="empty-state"><div class="emoji">👥</div><p>Nenhum cliente ainda</p></div>'; return; }
+    div.innerHTML=lista.map(c=>{
+      const agr=Date.now();
+      const bloqueado=c.bloqueado_manual||(c.trial_fim&&agr>c.trial_fim&&!c.pago)||(c.vencimento&&agr>c.vencimento);
+      const diasTrial=c.trial_fim?Math.ceil((c.trial_fim-agr)/(1000*60*60*24)):null;
+      let badge='',badgeClass='';
+      if(c.bloqueado_manual){badge='🔒 Bloqueado';badgeClass='badge-bloq';}
+      else if(bloqueado){badge='⏰ Vencido';badgeClass='badge-venc';}
+      else if(c.pago){badge='✅ Ativo';badgeClass='badge-ativo';}
+      else{badge=`⏳ Trial${diasTrial!==null?' ('+diasTrial+'d)':''}`;badgeClass='badge-trial';}
+      return `<div class="cliente-card">
+        <div class="cliente-header">
+          <div><div class="cliente-nome">${c.loja||'—'}</div><div class="cliente-email">${c.email}</div></div>
+          <span class="badge ${badgeClass}">${badge}</span>
+        </div>
+        <div class="cliente-info">📱 ${c.tel||'—'} • 👤 ${c.nome||'—'}<br>📅 Cadastro: ${c.criado?new Date(c.criado).toLocaleDateString('pt-BR'):'—'}</div>
+        <div class="cliente-acoes">
+          <button class="btn btn-outline btn-sm" onclick="ativarCliente('${c.uid}')">✅ Ativar 30d</button>
+          <button class="btn btn-outline btn-sm" onclick="bloquearCliente('${c.uid}',${!c.bloqueado_manual})">${c.bloqueado_manual?'🔓 Desbloquear':'🔒 Bloquear'}</button>
+          <button class="btn btn-outline btn-sm" onclick="extenderTrial('${c.uid}')">+7d Trial</button>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+async function ativarCliente(uid){
+  const venc=Date.now()+30*24*60*60*1000;
+  await db.ref('usuarios/'+uid).update({pago:true,vencimento:venc,bloqueado_manual:false});
+  toast('✅ Cliente ativado por 30 dias!');
+}
+
+async function bloquearCliente(uid,bloquear){
+  await db.ref('usuarios/'+uid).update({bloqueado_manual:bloquear});
+  toast(bloquear?'🔒 Cliente bloqueado':'🔓 Cliente desbloqueado');
+}
+
+async function extenderTrial(uid){
+  const snap=await db.ref('usuarios/'+uid+'/trial_fim').once('value');
+  const atual=snap.val()||Date.now();
+  await db.ref('usuarios/'+uid+'/trial_fim').set(Math.max(atual,Date.now())+7*24*60*60*1000);
+  toast('✅ Trial estendido por mais 7 dias!');
+}
+
+// ===================== INIT =====================
+const cfgSalva=localStorage.getItem(CFG_KEY);
+if(cfgSalva){
+  try{ iniciarFirebase(JSON.parse(cfgSalva)); }
+  catch(e){ mostrarTela('tela-setup'); }
+} else {
+  mostrarTela('tela-setup');
+}
+</script>
+</body>
+</html>
