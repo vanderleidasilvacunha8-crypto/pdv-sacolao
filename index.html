@@ -399,15 +399,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
   <!-- VENDER -->
   <div class="pagina" id="pag-vender">
 
-    <!-- BUSCA + PRODUTOS EM CIMA -->
+    <!-- BUSCA EM CIMA -->
     <div class="card">
-      <div class="card-titulo">🛒 Adicionar produto</div>
+      <div class="card-titulo">🛒 Vender produto</div>
       <div style="background:var(--verde-s);border-radius:14px;padding:14px;margin-bottom:14px">
         <div style="font-size:11px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🎤 Fale ou digite o produto</div>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
           <input type="text" id="busca-venda"
             placeholder="Ex: banana prata 1 kilo"
-            inputmode="text"
             autocomplete="off"
             style="flex:1;padding:13px 14px;border-radius:10px;border:1.5px solid var(--borda);font-size:15px;outline:none;background:white"
             onkeydown="if(event.key==='Enter'){event.preventDefault();processarInputVoz();}">
@@ -885,8 +884,6 @@ function irPara(pag){
   document.querySelectorAll('.tab-btn').forEach(b=>{
     if(b.getAttribute('onclick')?.includes("'"+pag+"'")) b.classList.add('ativo');
   });
-  // Mostra FAB do mic apenas na aba Vender
-  mostrarMicFab(pag==='vender');
   if(pag==='inicio') atualizarDashboard();
   if(pag==='vender') renderProdutosVenda();
   if(pag==='produtos') renderProdutos();
