@@ -177,7 +177,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .modal-titulo{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--verde);margin-bottom:16px}
 
 /* ===== BLOQUEIO ===== */
-.bloqueio-tela{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--verde);padding:32px;text-align:center}
+.bloqueio-tela{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-height(135deg,#1a3a2a,#2d6a4f);padding:32px;text-align:center;background:var(--verde)}
 .bloqueio-icon{font-size:64px;margin-bottom:16px}
 .bloqueio-titulo{font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--amarelo);margin-bottom:12px}
 .bloqueio-msg{color:rgba(255,255,255,0.8);font-size:15px;line-height:1.6;margin-bottom:24px}
@@ -198,12 +198,82 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .config-item:last-child{border-bottom:none}
 .config-label{font-weight:500;font-size:14px}
 .config-desc{font-size:12px;color:var(--cinza);margin-top:2px}
+
+/* ===== MICROFONE DEDICADO ===== */
+.mic-fab{
+  position:fixed;bottom:24px;right:20px;z-index:150;
+  width:62px;height:62px;border-radius:50%;border:none;
+  background:var(--verde);color:white;font-size:26px;
+  cursor:pointer;display:none;align-items:center;justify-content:center;
+  box-shadow:0 6px 24px rgba(26,58,42,0.4);
+  transition:all 0.2s;
+}
+.mic-fab.visible{display:flex}
+.mic-fab.escutando{
+  background:var(--laranja);
+  animation:micPulse 1s ease-in-out infinite;
+}
+@keyframes micPulse{
+  0%,100%{box-shadow:0 6px 24px rgba(231,111,81,0.4),0 0 0 0 rgba(231,111,81,0.4)}
+  50%{box-shadow:0 6px 24px rgba(231,111,81,0.5),0 0 0 16px rgba(231,111,81,0)}
+}
+.mic-status-bar{
+  display:none;position:fixed;bottom:96px;right:16px;left:16px;z-index:149;
+  background:var(--verde);color:white;border-radius:16px;padding:12px 16px;
+  font-size:13px;font-weight:500;text-align:center;
+  box-shadow:0 4px 20px rgba(26,58,42,0.3);
+  animation:slideUp 0.3s ease;
+}
+.mic-status-bar.visible{display:block}
+.mic-status-bar .mic-texto{color:var(--amarelo);font-weight:700;margin-top:4px;font-size:15px;min-height:20px}
+.mic-modos{display:flex;gap:6px;margin-bottom:6px}
+.mic-modo-btn{flex:1;padding:7px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.8);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s}
+.mic-modo-btn.sel{background:var(--amarelo);color:var(--verde);border-color:var(--amarelo)}
 </style>
 </head>
 <body>
 
+<!-- ============ TELA: SETUP FIREBASE ============ -->
+<div class="tela ativa" id="tela-setup">
+  <div class="auth-bg">
+    <div class="auth-logo">🌿 PDV<span>Sacolão</span></div>
+    <div class="auth-sub">Sistema de gestão para sacolões e mercearias</div>
+    <div class="auth-card">
+      <div class="auth-titulo">⚙️ Configurar Firebase</div>
+      <p style="font-size:13px;color:var(--cinza);margin-bottom:16px;line-height:1.6">
+        Cole aqui as configurações do seu projeto Firebase. Faça isso só uma vez!
+      </p>
+      <div class="campo">
+        <label>API Key</label>
+        <input type="text" id="cfg-apikey" placeholder="AIzaSy...">
+      </div>
+      <div class="campo">
+        <label>Auth Domain</label>
+        <input type="text" id="cfg-authdomain" placeholder="meu-projeto.firebaseapp.com">
+      </div>
+      <div class="campo">
+        <label>Database URL</label>
+        <input type="text" id="cfg-dburl" placeholder="https://meu-projeto-default-rtdb.firebaseio.com">
+      </div>
+      <div class="campo">
+        <label>Project ID</label>
+        <input type="text" id="cfg-projectid" placeholder="meu-projeto">
+      </div>
+      <button class="btn btn-verde" onclick="salvarConfig()" style="margin-bottom:12px">💾 Salvar e conectar</button>
+      <div style="background:var(--verde-s);border-radius:10px;padding:12px;font-size:12px;color:var(--cinza);line-height:1.7">
+        <b>Como pegar esses dados:</b><br>
+        1. Acesse <b>console.firebase.google.com</b><br>
+        2. Crie um projeto novo chamado <b>pdv-sacolao</b><br>
+        3. Clique em ⚙️ Configurações do projeto<br>
+        4. Em "Seus apps", clique em &lt;/&gt; (Web)<br>
+        5. Copie os dados do <b>firebaseConfig</b>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ TELA: LOGIN ============ -->
-<div class="tela ativa" id="tela-login">
+<div class="tela" id="tela-login">
   <div class="auth-bg">
     <div class="auth-logo">🌿 PDV<span>Sacolão</span></div>
     <div class="auth-sub">Gestão inteligente para seu negócio</div>
@@ -330,15 +400,44 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
   <div class="pagina" id="pag-vender">
     <div class="card">
       <div class="card-titulo">🛒 Vender produto</div>
+
+      <!-- BARRA DE BUSCA + MIC -->
       <div style="background:var(--verde-s);border-radius:14px;padding:14px;margin-bottom:14px">
-        <div style="font-size:12px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase">🔍 Buscar produto</div>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-          <input class="campo" type="text" id="busca-venda" placeholder="Digite ou use 🎤 no teclado..." style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px;outline:none">
-          <button onclick="limparBusca()" style="width:40px;height:44px;border-radius:10px;border:none;background:#ddd;font-size:16px;cursor:pointer">✕</button>
+        <div style="font-size:11px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🎤 Comando de voz / Busca</div>
+
+        <!-- Linha principal: display de texto + botão mic + limpar -->
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+          <!-- Área de exibição (readonly, não recebe foco/cursor) -->
+          <div id="busca-display"
+            style="flex:1;min-height:46px;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px;background:white;color:var(--texto);word-break:break-word;line-height:1.4;cursor:default"
+            onclick="this.blur()">
+            <span id="busca-placeholder" style="color:#aaa">Toque no 🎤 e fale os produtos...</span>
+            <span id="busca-texto" style="display:none"></span>
+          </div>
+
+          <!-- Botão microfone -->
+          <button id="btn-mic-inline" onclick="toggleMic()"
+            style="width:52px;height:52px;border-radius:50%;border:none;background:var(--verde);color:white;font-size:24px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(26,58,42,0.3);transition:all 0.2s">
+            🎤
+          </button>
+
+          <!-- Limpar -->
+          <button onclick="limparBusca()" title="Limpar"
+            style="width:40px;height:40px;border-radius:10px;border:none;background:#ddd;font-size:16px;cursor:pointer;flex-shrink:0">✕</button>
         </div>
-        <button class="btn btn-verde" onclick="filtrarProdutosVenda()" style="margin-bottom:6px">🔍 Buscar / Confirmar</button>
-        <div style="font-size:11px;color:var(--cinza);text-align:center">🎤 Use o microfone do teclado → depois toque em Buscar</div>
+
+        <!-- Status do mic -->
+        <div id="mic-inline-status" style="display:none;font-size:12px;color:var(--verde);font-weight:600;text-align:center;margin-bottom:6px">
+          🟢 Ouvindo... fale o produto
+        </div>
+
+        <!-- Botão confirmar (aparece quando há texto) -->
+        <button id="btn-confirmar-voz" onclick="confirmarBuscaVoz()"
+          style="display:none;width:100%;padding:12px;border-radius:10px;border:none;background:var(--verde);color:white;font-size:14px;font-weight:600;cursor:pointer">
+          ✅ Buscar / Confirmar
+        </button>
       </div>
+
       <div style="font-size:12px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase">📦 Produtos disponíveis</div>
       <div id="lista-produtos-venda"></div>
     </div>
@@ -565,24 +664,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
   </div>
 </div>
 
+<!-- MICROFONE FAB -->
+<button class="mic-fab" id="mic-fab" onclick="toggleMic()" title="Falar produto">🎤</button>
+
+<!-- BARRA DE STATUS DO MIC -->
+<div class="mic-status-bar" id="mic-status-bar">
+  <div class="mic-modos">
+    <button class="mic-modo-btn sel" id="mic-modo-voz" onclick="setMicModo('voz')">🎤 Voz livre</button>
+    <button class="mic-modo-btn" id="mic-modo-continuo" onclick="setMicModo('continuo')">🔁 Contínuo</button>
+  </div>
+  <div id="mic-status-txt">🟢 Ouvindo... fale o produto</div>
+  <div class="mic-texto" id="mic-resultado-txt"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-// ===================== FIREBASE CONFIG FIXO =====================
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCscd8Lokm6uo3cpcOLXbj0RI2ETcQSMRY",
-  authDomain: "pdv-sacolao.firebaseapp.com",
-  databaseURL: "https://pdv-sacolao-default-rtdb.firebaseio.com",
-  projectId: "pdv-sacolao"
-};
-
+// ===================== CONFIG FIREBASE =====================
+const CFG_KEY = 'pdvsacolao_firebase_config';
 let firebaseApp, auth, db;
 let usuarioAtual = null;
 let dadosUsuario = null;
 let carrinho = [];
 let metodoPgto = 'dinheiro';
 let ultimaVenda = null;
-let _vozItensLocal = [];
+let _vozItens = [];
 let mqId = null, mqModo = 'unid', mqQty = 1;
 
 // ===================== UTILS =====================
@@ -605,19 +711,39 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
   el.addEventListener('click',e=>{ if(e.target===el) fecharModal(); });
 });
 
-// ===================== INICIAR FIREBASE =====================
-function iniciarFirebase(){
+// ===================== RELÓGIO =====================
+function tick(){
+  const a=new Date();
+  // Atualiza relógio se existir
+}
+setInterval(tick,1000);
+
+// ===================== FIREBASE SETUP =====================
+function salvarConfig(){
+  const cfg = {
+    apiKey: document.getElementById('cfg-apikey').value.trim(),
+    authDomain: document.getElementById('cfg-authdomain').value.trim(),
+    databaseURL: document.getElementById('cfg-dburl').value.trim(),
+    projectId: document.getElementById('cfg-projectid').value.trim(),
+  };
+  if(!cfg.apiKey||!cfg.authDomain||!cfg.databaseURL||!cfg.projectId){
+    toast('⚠️ Preencha todos os campos'); return;
+  }
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  iniciarFirebase(cfg);
+}
+
+function iniciarFirebase(cfg){
   try{
-    if(firebase.apps.length===0){
-      firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
-    } else {
-      firebaseApp = firebase.app();
-    }
+    if(firebase.apps.length) firebase.apps.forEach(a=>a.delete());
+    firebaseApp = firebase.initializeApp(cfg);
     auth = firebase.auth();
     db = firebase.database();
+    toast('✅ Firebase conectado!');
+    mostrarTela('tela-login');
     ouvirAuth();
   } catch(e){
-    toast('❌ Erro Firebase: '+e.message);
+    toast('❌ Erro: '+e.message);
   }
 }
 
@@ -626,6 +752,7 @@ function ouvirAuth(){
   auth.onAuthStateChanged(async user=>{
     if(!user){ mostrarTela('tela-login'); return; }
     usuarioAtual = user;
+    // Verifica se é admin
     const snap = await db.ref('admin').once('value');
     const adminEmail = snap.val()?.email;
     if(user.email === adminEmail){
@@ -633,15 +760,18 @@ function ouvirAuth(){
       carregarClientes();
       return;
     }
+    // Carrega dados do usuário
     const snapUser = await db.ref('usuarios/'+user.uid).once('value');
     dadosUsuario = snapUser.val();
     if(!dadosUsuario){ auth.signOut(); return; }
+    // Verifica bloqueio e trial
     const status = verificarStatus(dadosUsuario);
     if(status.bloqueado){
       document.getElementById('bloq-msg').textContent = status.msg;
       mostrarTela('tela-bloqueado');
       return;
     }
+    // Mostra app
     iniciarApp(dadosUsuario, status);
   });
 }
@@ -650,6 +780,7 @@ function verificarStatus(dados){
   const agora = Date.now();
   if(dados.bloqueado_manual) return {bloqueado:true, msg:'Acesso bloqueado pelo administrador. Entre em contato para regularizar.'};
   if(dados.vencimento && agora > dados.vencimento) return {bloqueado:true, msg:'Seu acesso expirou. Renove sua assinatura para continuar usando o PDV Sacolão.'};
+  // Trial
   if(dados.trial_fim && agora > dados.trial_fim && !dados.pago) return {bloqueado:true, msg:'Seu período de teste de 7 dias expirou. Assine para continuar!'};
   const diasRestantes = dados.trial_fim ? Math.ceil((dados.trial_fim - agora)/(1000*60*60*24)) : null;
   return {bloqueado:false, diasRestantes, pago: dados.pago};
@@ -662,13 +793,14 @@ function iniciarApp(dados, status){
   document.getElementById('cfg-email').textContent = usuarioAtual.email;
   document.getElementById('cfg-status').textContent = dados.pago ? '✅ Ativo' : '⏳ Trial';
   if(status.diasRestantes !== null && !status.pago){
-    const txt = status.diasRestantes > 0 ? `⏳ ${status.diasRestantes} dia(s) restante(s)` : '⏰ Trial encerrado';
+    const txt = status.diasRestantes > 0 ? `⏳ ${status.diasRestantes} dia(s) de teste restante(s)` : '⏰ Trial encerrado';
     document.getElementById('app-trial-status').textContent = txt;
     document.getElementById('cfg-vencimento').textContent = txt;
   } else {
     document.getElementById('app-trial-status').textContent = dados.pago ? '✅ Plano ativo' : '';
     if(dados.vencimento) document.getElementById('cfg-vencimento').textContent = new Date(dados.vencimento).toLocaleDateString('pt-BR');
   }
+  // Ouve dados em tempo real
   ouvirDados();
   renderProdutosVenda();
   atualizarDashboard();
@@ -685,11 +817,11 @@ async function criarConta(){
   if(senha.length < 6){ toast('⚠️ Senha deve ter ao menos 6 dígitos'); return; }
   try{
     const cred = await auth.createUserWithEmailAndPassword(email, senha);
-    const uid2 = cred.user.uid;
+    const uid = cred.user.uid;
     const agora = Date.now();
-    const trial_fim = agora + 7*24*60*60*1000;
-    await db.ref('usuarios/'+uid2).set({
-      loja, nome, tel, email, uid:uid2,
+    const trial_fim = agora + 7*24*60*60*1000; // 7 dias
+    await db.ref('usuarios/'+uid).set({
+      loja, nome, tel, email, uid,
       criado: agora, trial_fim, pago: false,
       bloqueado_manual: false,
       produtos: {}, vendas: {}, fiado: {}
@@ -740,6 +872,7 @@ function refUser(path){
 }
 
 function ouvirDados(){
+  // Ouve dados em tempo real
   refUser('produtos').on('value', snap=>{
     const val = snap.val() || {};
     dadosUsuario.produtos = val;
@@ -766,6 +899,8 @@ function irPara(pag){
   document.querySelectorAll('.tab-btn').forEach(b=>{
     if(b.getAttribute('onclick')?.includes("'"+pag+"'")) b.classList.add('ativo');
   });
+  // Mostra FAB do mic apenas na aba Vender
+  mostrarMicFab(pag==='vender');
   if(pag==='inicio') atualizarDashboard();
   if(pag==='vender') renderProdutosVenda();
   if(pag==='produtos') renderProdutos();
@@ -785,6 +920,7 @@ function atualizarDashboard(){
   document.getElementById('st-pedidos').textContent=vendasHoje.length;
   document.getElementById('st-prods').textContent=Object.keys(dadosUsuario.produtos||{}).length;
   document.getElementById('st-fiado').textContent=fmt(totalFiado);
+  // Estoque baixo
   const prods = Object.values(dadosUsuario.produtos||{});
   const baixo = prods.filter(p=>p.estoque<=5);
   const lista = document.getElementById('lista-estoque-baixo');
@@ -853,12 +989,136 @@ function renderProdutosVenda(filtro=''){
   if(!dadosUsuario){ lista.innerHTML=''; return; }
   const prods=Object.values(dadosUsuario.produtos||{}).filter(p=>!filtro||p.nome.toLowerCase().includes(filtro));
   if(!Object.keys(dadosUsuario.produtos||{}).length){ lista.innerHTML='<div class="empty-state"><div class="emoji">📦</div><p>Cadastre produtos em <b>Produtos</b> primeiro</p></div>'; return; }
-  if(!prods.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">🔍</div><p>Nenhum produto encontrado</p></div>'; return; }
+  if(!prods.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">🔍</div><p>Nenhum produto encontrado para "<b>'+filtro+'</b>"</p></div>'; return; }
   lista.innerHTML=prods.map(p=>`<div class="pv-item" onclick="abrirQty('${p.id}')"><div class="pv-esq"><span style="font-size:24px">${p.emoji}</span><div><div class="pv-nome">${p.nome}</div><div class="pv-preco">${fmt(p.preco)} / ${p.unidade}</div></div></div><button class="pv-add">+</button></div>`).join('');
 }
 
+// ===================== MICROFONE DEDICADO =====================
+let _vozItensLocal=[];
+let micRec=null;
+let micAtivo=false;
+let micTextoAcumulado=''; // texto acumulado de todas as falas
+
+function getBuscaTexto(){ return micTextoAcumulado; }
+
+function setBuscaDisplay(texto, interim=''){
+  const placeholder=document.getElementById('busca-placeholder');
+  const span=document.getElementById('busca-texto');
+  const btnConfirmar=document.getElementById('btn-confirmar-voz');
+  if(!texto&&!interim){
+    placeholder.style.display='';
+    span.style.display='none';
+    span.textContent='';
+    if(btnConfirmar) btnConfirmar.style.display='none';
+  } else {
+    placeholder.style.display='none';
+    span.style.display='';
+    span.innerHTML=texto+(interim?'<span style="color:#aaa"> '+interim+'...</span>':'');
+    if(btnConfirmar) btnConfirmar.style.display='block';
+  }
+}
+
+function mostrarMicFab(show){
+  // FAB externo não é mais usado — botão inline
+  if(!show) pararMic();
+}
+
+function toggleMic(){
+  if(micAtivo) pararMic();
+  else iniciarMic();
+}
+
+function iniciarMic(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast('❌ Seu navegador não suporta reconhecimento de voz'); return; }
+  if(micRec){ try{micRec.abort();}catch(e){} micRec=null; }
+
+  micRec=new SR();
+  micRec.lang='pt-BR';
+  micRec.continuous=false; // cada sessão captura uma fala
+  micRec.interimResults=true;
+  micRec.maxAlternatives=1;
+
+  micAtivo=true;
+  atualizarBotaoMic(true);
+  document.getElementById('mic-inline-status').style.display='block';
+  document.getElementById('mic-inline-status').textContent='🟢 Ouvindo... fale o produto';
+
+  micRec.onresult=e=>{
+    let interim='',final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal) final+=t; else interim+=t;
+    }
+    if(final){
+      // Acumula no final — adiciona espaço se já tiver texto
+      const sep=micTextoAcumulado?', ':'';
+      micTextoAcumulado+=(sep+final.trim());
+      setBuscaDisplay(micTextoAcumulado);
+      document.getElementById('mic-inline-status').textContent='⏸ Pausado — toque 🎤 para continuar';
+      micAtivo=false;
+      atualizarBotaoMic(false);
+      // Processa automaticamente
+      filtrarProdutosVendaTexto(micTextoAcumulado.toLowerCase());
+    } else if(interim){
+      // Mostra interim sem alterar o acumulado
+      setBuscaDisplay(micTextoAcumulado, interim);
+      document.getElementById('mic-inline-status').textContent='🎙️ '+interim;
+    }
+  };
+
+  micRec.onerror=e=>{
+    if(e.error==='no-speech'){
+      document.getElementById('mic-inline-status').textContent='🔇 Não ouvi — toque 🎤 para tentar de novo';
+      micAtivo=false;
+      atualizarBotaoMic(false);
+      return;
+    }
+    toast('🎤 Erro: '+e.error);
+    pararMic();
+  };
+
+  micRec.onend=()=>{
+    // Se ainda estava ativo (sem resultado final), reseta botão
+    if(micAtivo){
+      micAtivo=false;
+      atualizarBotaoMic(false);
+    }
+  };
+
+  try{ micRec.start(); } catch(e){ toast('❌ Não foi possível iniciar microfone'); micAtivo=false; atualizarBotaoMic(false); }
+}
+
+function pararMic(){
+  micAtivo=false;
+  if(micRec){ try{micRec.abort();}catch(e){} micRec=null; }
+  atualizarBotaoMic(false);
+  document.getElementById('mic-inline-status').style.display='none';
+}
+
+function atualizarBotaoMic(ativo){
+  const btn=document.getElementById('btn-mic-inline');
+  if(!btn) return;
+  if(ativo){
+    btn.textContent='⏹';
+    btn.style.background='var(--laranja)';
+    btn.style.animation='micPulse 1s ease-in-out infinite';
+  } else {
+    btn.textContent='🎤';
+    btn.style.background='var(--verde)';
+    btn.style.animation='';
+  }
+}
+
+function confirmarBuscaVoz(){
+  filtrarProdutosVendaTexto(micTextoAcumulado.toLowerCase());
+}
+
 function filtrarProdutosVenda(){
-  const texto=(document.getElementById('busca-venda').value||'').toLowerCase().trim();
+  filtrarProdutosVendaTexto(micTextoAcumulado.toLowerCase());
+}
+
+function filtrarProdutosVendaTexto(texto){
   if(!texto){ renderProdutosVenda(''); return; }
   const itens=interpretarVoz(texto);
   if(itens.length>0) mostrarPreviewVoz(itens);
@@ -915,13 +1175,21 @@ function addTudoVoz(){
   _vozItensLocal.forEach(item=>{
     carrinho.push({id:item.prod.id,emoji:item.prod.emoji,nome:item.prod.nome,preco:item.prod.preco,unidade:item.prod.unidade,qty:item.qty,descQty:item.descQty,total:item.prod.preco*item.qty});
   });
-  limparBusca(); renderCarrinho();
-  toast('✅ '+_vozItensLocal.length+' item(s) adicionado(s)!',2000);
+  const qtd=_vozItensLocal.length;
   _vozItensLocal=[];
+  limparBusca();
+  renderCarrinho();
+  toast('✅ '+qtd+' item(s) adicionado(s)!',2000);
   setTimeout(()=>document.getElementById('card-carrinho')?.scrollIntoView({behavior:'smooth'}),300);
 }
 
-function limparBusca(){ document.getElementById('busca-venda').value=''; renderProdutosVenda(); }
+function limparBusca(){
+  micTextoAcumulado='';
+  setBuscaDisplay('');
+  pararMic();
+  document.getElementById('mic-inline-status').style.display='none';
+  renderProdutosVenda();
+}
 
 // MODAL QTY
 function abrirQty(id){
@@ -998,10 +1266,12 @@ async function finalizarVenda(){
   if(metodoPgto==='fiado'&&!nomeCli){ toast('⚠️ Informe o nome do cliente'); return; }
   const venda={id:uid(),data:new Date().toISOString(),dataFmt:hoje(),itens:[...carrinho],total,pgto:metodoPgto,cliente:nomeCli};
   await refUser('vendas/'+venda.id).set(venda);
+  // Atualiza estoque
   for(const c of carrinho){
     const p=Object.values(dadosUsuario.produtos||{}).find(x=>x.id===c.id);
     if(p){ await refUser('produtos/'+c.id+'/estoque').set(Math.max(0,(p.estoque||0)-c.qty)); }
   }
+  // Fiado
   if(metodoPgto==='fiado'&&nomeCli){
     const fKey=nomeCli.replace(/\s+/g,'_').toLowerCase();
     const snapF=await refUser('fiado/'+fKey).once('value');
@@ -1058,18 +1328,10 @@ function renderFiado(){
   document.getElementById('qtd-fiado').textContent=clis.length+' cliente(s)';
   const lista=document.getElementById('lista-fiado');
   if(!clis.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">🤝</div><p>Sem fiado em aberto</p></div>'; return; }
-  lista.innerHTML=clis.sort((a,b)=>b.saldo-a.saldo).map(c=>`<div class="fiado-item"><div class="fiado-header"><div class="fiado-nome">👤 ${c.nome}</div><div class="fiado-divida">${fmt(c.saldo)}</div></div><div style="font-size:11px;color:var(--cinza)">Último: ${c.historico?.slice(-1)[0]?.data||'—'}</div><div class="fiado-acoes"><button class="btn btn-outline btn-sm" onclick="preencherFiado('${c.nome}')">💵 Pagamento</button><button class="btn btn-outline btn-sm" onclick="verHistorico('${c.nome}')">📋 Histórico</button></div></div>`).join('');
+  lista.innerHTML=clis.sort((a,b)=>b.saldo-a.saldo).map(c=>`<div class="fiado-item"><div class="fiado-header"><div class="fiado-nome">👤 ${c.nome}</div><div class="fiado-divida">${fmt(c.saldo)}</div></div><div style="font-size:11px;color:var(--cinza)">Último: ${c.historico?.slice(-1)[0]?.data||'—'}</div><div class="fiado-acoes"><button class="btn btn-outline btn-sm" onclick="preencherFiado('${c.nome}')">💵 Pagamento</button><button class="btn btn-outline btn-sm" onclick="alert('Histórico de ${c.nome}:\\n\\n'+(${JSON.stringify(c.historico||[])}).slice(-10).reverse().map(h=>h.data+' | '+(h.tipo==='debito'?'➕':'💵')+' R$ '+h.valor.toFixed(2)+' - '+h.desc).join('\\n'))">📋 Histórico</button></div></div>`).join('');
 }
 
 function preencherFiado(nome){ document.getElementById('fiado-nome').value=nome; toast('💵 Informe o valor do pagamento'); }
-
-function verHistorico(nome){
-  const fKey=nome.replace(/\s+/g,'_').toLowerCase();
-  const c=dadosUsuario.fiado?.[fKey];
-  if(!c) return;
-  const hist=(c.historico||[]).slice(-10).reverse().map(h=>h.data+' | '+(h.tipo==='debito'?'➕':'💵')+' R$ '+h.valor.toFixed(2)+' - '+h.desc).join('\n');
-  alert('Histórico de '+nome+':\n\n'+hist);
-}
 
 // ===================== RELATÓRIOS =====================
 function renderRelatorios(){
@@ -1087,10 +1349,12 @@ function renderRelatorios(){
   document.getElementById('rel-semana').textContent=fmt(s);
   document.getElementById('rel-mes').textContent=fmt(m);
   document.getElementById('rel-fiado').textContent=fmt(f);
+  // Mais vendidos
   const cont={};
   Object.values(dadosUsuario.vendas||{}).forEach(v=>v.itens?.forEach(i=>{ cont[i.nome]=cont[i.nome]||{nome:i.nome,emoji:i.emoji,qty:0,total:0}; cont[i.nome].qty+=i.qty; cont[i.nome].total+=i.preco*i.qty; }));
   const top=Object.values(cont).sort((a,b)=>b.qty-a.qty).slice(0,5);
   document.getElementById('mais-vendidos').innerHTML=!top.length?'<div class="empty-state"><div class="emoji">📊</div><p>Sem vendas ainda</p></div>':top.map((p,i)=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--borda)"><div><b>${['🥇','🥈','🥉','4️⃣','5️⃣'][i]} ${p.emoji} ${p.nome}</b><div style="font-size:12px;color:var(--cinza)">${p.qty.toFixed(2)} vendidos</div></div><span style="font-family:'Fraunces',serif;font-weight:700;color:var(--verde)">${fmt(p.total)}</span></div>`).join('');
+  // Histórico
   const hist=Object.values(dadosUsuario.vendas||{}).sort((a,b)=>new Date(b.data)-new Date(a.data)).slice(0,20);
   document.getElementById('historico-vendas').innerHTML=!hist.length?'<div class="empty-state"><div class="emoji">🛒</div><p>Sem vendas</p></div>':hist.map(v=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--borda)"><div style="font-size:13px"><b>${v.itens?.length||0} item(s)</b> • ${v.pgto.toUpperCase()}<div style="font-size:11px;color:var(--cinza)">${v.dataFmt}</div></div><span style="font-family:'Fraunces',serif;font-weight:700;color:var(--verde);font-size:15px">${fmt(v.total)}</span></div>`).join('');
 }
@@ -1128,7 +1392,7 @@ function carregarClientes(){
       if(c.bloqueado_manual){badge='🔒 Bloqueado';badgeClass='badge-bloq';}
       else if(bloqueado){badge='⏰ Vencido';badgeClass='badge-venc';}
       else if(c.pago){badge='✅ Ativo';badgeClass='badge-ativo';}
-      else{badge='⏳ Trial'+(diasTrial!==null?' ('+diasTrial+'d)':'');badgeClass='badge-trial';}
+      else{badge=`⏳ Trial${diasTrial!==null?' ('+diasTrial+'d)':''}`;badgeClass='badge-trial';}
       return `<div class="cliente-card">
         <div class="cliente-header">
           <div><div class="cliente-nome">${c.loja||'—'}</div><div class="cliente-email">${c.email}</div></div>
@@ -1164,7 +1428,13 @@ async function extenderTrial(uid){
 }
 
 // ===================== INIT =====================
-iniciarFirebase();
+const cfgSalva=localStorage.getItem(CFG_KEY);
+if(cfgSalva){
+  try{ iniciarFirebase(JSON.parse(cfgSalva)); }
+  catch(e){ mostrarTela('tela-setup'); }
+} else {
+  mostrarTela('tela-setup');
+}
 </script>
 </body>
 </html>
