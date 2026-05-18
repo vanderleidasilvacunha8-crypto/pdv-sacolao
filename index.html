@@ -1169,59 +1169,84 @@ function interpretarVoz(texto){
   Object.entries(nums).forEach(([p,v])=>{ t=t.replace(new RegExp('\\b'+p+'\\b','g'),String(v)+' '); });
   t=t.replace(/(\d+),(\d+)/g,'$1.$2');
 
-  // Mapa de produtos encontrados (somando quantidades do mesmo produto)
-  const mapa={}; // prodId -> {prod, qty, gramas}
+  // Mapa de produtos encontrados por ID (para somar quantidades)
+  const mapa={};
 
-  // Divide o texto em segmentos por vírgula ou "e"
-  const segmentos=t.split(/[,e]\s+|,/);
+  // Divide em segmentos por vírgula ou "e"
+  const segmentos=t.split(/,\s*|\se\s+/);
 
   segmentos.forEach(seg=>{
     seg=seg.trim();
     if(!seg) return;
 
-    // Tenta encontrar produto cadastrado no segmento
-    let prodEncontrado=null;
-    let melhorScore=0;
+    // Encontra o produto com MELHOR score no segmento
+    let melhorProd=null;
+    let melhorScore=-1;
 
     Object.values(dadosUsuario.produtos||{}).forEach(prod=>{
       const np=prod.nome.toLowerCase();
       const pals=np.split(' ').filter(p=>p.length>2);
-      // Conta quantas palavras do nome do produto aparecem no segmento
+      if(!pals.length) return;
+
+      // Conta palavras do nome que aparecem no segmento
       const matches=pals.filter(pal=>seg.includes(pal)).length;
-      const score=matches/Math.max(pals.length,1);
-      // Só aceita se pelo menos 50% das palavras do nome aparecerem
-      if(score>=0.5&&score>melhorScore){
+
+      // Score = proporção de palavras encontradas
+      const score=matches/pals.length;
+
+      // Só aceita se TODAS as palavras relevantes do nome estiverem presentes
+      // Ex: "banana prata" exige tanto "banana" quanto "prata"
+      if(score===1.0&&score>melhorScore){
         melhorScore=score;
-        prodEncontrado=prod;
+        melhorProd=prod;
       }
     });
 
-    if(!prodEncontrado) return; // Ignora segmento sem produto cadastrado
+    // Se não achou score 100%, tenta com score >= 0.7 mas só se for único
+    if(!melhorProd){
+      let candidatos=[];
+      Object.values(dadosUsuario.produtos||{}).forEach(prod=>{
+        const np=prod.nome.toLowerCase();
+        const pals=np.split(' ').filter(p=>p.length>2);
+        if(!pals.length) return;
+        const matches=pals.filter(pal=>seg.includes(pal)).length;
+        const score=matches/pals.length;
+        if(score>=0.7) candidatos.push({prod,score});
+      });
+      // Só usa se houver exatamente 1 candidato — evita ambiguidade
+      if(candidatos.length===1){
+        melhorProd=candidatos[0].prod;
+        melhorScore=candidatos[0].score;
+      }
+    }
+
+    if(!melhorProd) return; // nenhum produto encontrado neste segmento
 
     // Extrai quantidade do segmento
     let qty=1, gramas=0;
+    const isKg=['kg','litro'].includes(melhorProd.unidade);
     const mKg=seg.match(/(\d+\.?\d*)\s*(?:kg|quilo|quilos|kilo|kilos)/);
     const mG=seg.match(/(\d+)\s*(?:g\b|gramas?|grama\b)/);
     const mN=seg.match(/(\d+\.?\d*)/);
 
     if(mKg){ qty=parseFloat(mKg[1]); gramas=qty*1000; }
     else if(mG){ gramas=parseFloat(mG[1]); qty=gramas/1000; }
-    else if(mN&&parseFloat(mN[1])>0){ qty=parseFloat(mN[1]); gramas=qty*1000; }
+    else if(mN&&parseFloat(mN[1])>0&&!isKg){ qty=parseFloat(mN[1]); gramas=qty*1000; }
+    else if(isKg){ qty=1; gramas=1000; }
     else { qty=1; gramas=1000; }
 
-    // Soma no mapa
-    if(mapa[prodEncontrado.id]){
-      mapa[prodEncontrado.id].qty+=qty;
-      mapa[prodEncontrado.id].gramas+=gramas;
+    // Soma no mapa (mesmo produto acumula)
+    if(mapa[melhorProd.id]){
+      mapa[melhorProd.id].qty+=qty;
+      mapa[melhorProd.id].gramas+=gramas;
     } else {
-      mapa[prodEncontrado.id]={prod:prodEncontrado, qty, gramas};
+      mapa[melhorProd.id]={prod:melhorProd, qty, gramas, isKg};
     }
   });
 
   // Monta resultado com descQty formatado
-  return Object.values(mapa).map(({prod,qty,gramas})=>{
+  return Object.values(mapa).map(({prod,qty,gramas,isKg})=>{
     let descQty;
-    const isKg=['kg','litro'].includes(prod.unidade);
     if(isKg){
       if(gramas>=1000&&gramas%1000===0) descQty=(gramas/1000)+' kg';
       else if(gramas>=1000) descQty=(gramas/1000).toFixed(2).replace('.',',')+' kg';
