@@ -1054,7 +1054,7 @@ function iniciarMic(){
       statusEl.textContent='⏱️ Tempo esgotado — toque 🎤 para falar de novo';
       micAtivo=false;
       atualizarBotaoMic(false);
-      if(micRec){ try{micRec.abort();}catch(e){} micRec=null; }
+      if(micRec){ try{micRec.stop();}catch(e){} }
     }
   },8000);
 
@@ -1070,7 +1070,7 @@ function iniciarMic(){
   },1000);
 
   micRec.onresult=e=>{
-    if(!dentroJanela) return; // ignora fala fora da janela
+    if(!dentroJanela) return;
     clearTimeout(micJanelaTimer);
     clearInterval(countdown);
     dentroJanela=false;
@@ -1098,10 +1098,12 @@ function iniciarMic(){
   micRec.onerror=e=>{
     clearTimeout(micJanelaTimer);
     clearInterval(countdown);
+    // 'aborted' é esperado quando paramos manualmente — ignora silenciosamente
+    if(e.error==='aborted') return;
     if(e.error==='no-speech'){
       statusEl.textContent='🔇 Não ouvi — toque 🎤 para tentar de novo';
     } else {
-      toast('🎤 Erro: '+e.error);
+      statusEl.textContent='⚠️ Erro: '+e.error+' — toque 🎤 de novo';
     }
     micAtivo=false;
     atualizarBotaoMic(false);
@@ -1113,6 +1115,7 @@ function iniciarMic(){
     if(micAtivo){
       micAtivo=false;
       atualizarBotaoMic(false);
+      statusEl.textContent='⏱️ Tempo esgotado — toque 🎤 para falar de novo';
     }
   };
 
@@ -1122,7 +1125,7 @@ function iniciarMic(){
 function pararMic(){
   micAtivo=false;
   clearTimeout(micJanelaTimer);
-  if(micRec){ try{micRec.abort();}catch(e){} micRec=null; }
+  if(micRec){ try{micRec.stop();}catch(e){} micRec=null; }
   atualizarBotaoMic(false);
   document.getElementById('mic-inline-status').style.display='none';
 }
