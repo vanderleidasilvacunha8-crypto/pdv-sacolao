@@ -677,7 +677,6 @@ let dadosUsuario = null;
 let carrinho = [];
 let metodoPgto = 'dinheiro';
 let ultimaVenda = null;
-let _vozItens = [];
 let mqId = null, mqModo = 'unid', mqQty = 1;
 
 // ===================== UTILS =====================
@@ -983,10 +982,6 @@ function renderProdutosVenda(filtro=''){
 }
 
 // ===================== MICROFONE DEDICADO =====================
-let micRec=null;
-let micAtivo=false;
-let micTextoAcumulado='';
-let micJanelaTimer=null; // janela de 3s para aceitar voz
 
 function getBuscaTexto(){ return micTextoAcumulado; }
 
@@ -1504,3 +1499,4 @@ if(cfgSalva){
 </script>
 </body>
 </html>
+
