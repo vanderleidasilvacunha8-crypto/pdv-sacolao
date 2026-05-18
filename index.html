@@ -398,10 +398,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 
   <!-- VENDER -->
   <div class="pagina" id="pag-vender">
-
-    <!-- BUSCA EM CIMA -->
     <div class="card">
       <div class="card-titulo">🛒 Vender produto</div>
+
+      <!-- BUSCA -->
       <div style="background:var(--verde-s);border-radius:14px;padding:14px;margin-bottom:14px">
         <div style="font-size:11px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🎤 Fale ou digite o produto</div>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
@@ -410,7 +410,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
             autocomplete="off"
             style="flex:1;padding:13px 14px;border-radius:10px;border:1.5px solid var(--borda);font-size:15px;outline:none;background:white"
             onkeydown="if(event.key==='Enter'){event.preventDefault();processarInputVoz();}">
-          <button onclick="limparBusca()" title="Limpar"
+          <button onclick="document.getElementById('busca-venda').value='';document.getElementById('mic-inline-status').style.display='none';" title="Limpar"
             style="width:42px;height:48px;border-radius:10px;border:none;background:#ddd;font-size:16px;cursor:pointer;flex-shrink:0">✕</button>
         </div>
         <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:10px">
@@ -422,28 +422,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
         </button>
         <div id="mic-inline-status" style="display:none;font-size:12px;font-weight:600;text-align:center;margin-top:8px;padding:8px;border-radius:8px;background:white"></div>
       </div>
+
+      <!-- CARRINHO (aparece aqui, acima dos produtos) -->
+      <div id="card-carrinho" style="display:none;margin-bottom:14px">
+        <div class="card-titulo">🛒 Carrinho</div>
+        <div id="lista-carrinho"></div>
+        <div class="total-box"><div><div class="total-label">Total da compra</div></div><div class="total-valor" id="total-venda">R$ 0,00</div></div>
+        <div class="card-titulo" style="margin-top:4px">💳 Pagamento</div>
+        <div class="pgto-grid">
+          <button class="pgto-btn sel" id="pgto-dinheiro" onclick="selPgto('dinheiro')"><span class="icon">💵</span>Dinheiro</button>
+          <button class="pgto-btn" id="pgto-pix" onclick="selPgto('pix')"><span class="icon">📱</span>Pix</button>
+          <button class="pgto-btn" id="pgto-cartao" onclick="selPgto('cartao')"><span class="icon">💳</span>Cartão</button>
+          <button class="pgto-btn" id="pgto-fiado" onclick="selPgto('fiado')"><span class="icon">🤝</span>Fiado</button>
+        </div>
+        <div id="area-fiado" style="display:none;margin-bottom:12px">
+          <label style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase">Nome do cliente</label>
+          <input type="text" id="cliente-fiado" placeholder="Nome do cliente..." style="width:100%;margin-top:5px;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px">
+        </div>
+        <button class="btn btn-laranja" style="margin-bottom:10px;font-size:17px;padding:16px" onclick="finalizarVenda()">✅ FINALIZAR VENDA</button>
+        <button class="btn btn-outline" onclick="limparCarrinho()">🗑️ Limpar carrinho</button>
+      </div>
+
+      <!-- PRODUTOS DISPONÍVEIS (embaixo do carrinho) -->
       <div style="font-size:12px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase">📦 Produtos disponíveis</div>
       <div id="lista-produtos-venda"></div>
-    </div>
-
-    <!-- CARRINHO EMBAIXO -->
-    <div class="card" id="card-carrinho" style="display:none">
-      <div class="card-titulo">🛒 Carrinho</div>
-      <div id="lista-carrinho"></div>
-      <div class="total-box"><div><div class="total-label">Total da compra</div></div><div class="total-valor" id="total-venda">R$ 0,00</div></div>
-      <div class="card-titulo" style="margin-top:4px">💳 Pagamento</div>
-      <div class="pgto-grid">
-        <button class="pgto-btn sel" id="pgto-dinheiro" onclick="selPgto('dinheiro')"><span class="icon">💵</span>Dinheiro</button>
-        <button class="pgto-btn" id="pgto-pix" onclick="selPgto('pix')"><span class="icon">📱</span>Pix</button>
-        <button class="pgto-btn" id="pgto-cartao" onclick="selPgto('cartao')"><span class="icon">💳</span>Cartão</button>
-        <button class="pgto-btn" id="pgto-fiado" onclick="selPgto('fiado')"><span class="icon">🤝</span>Fiado</button>
-      </div>
-      <div id="area-fiado" style="display:none;margin-bottom:12px">
-        <label style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase">Nome do cliente</label>
-        <input type="text" id="cliente-fiado" placeholder="Nome do cliente..." style="width:100%;margin-top:5px;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px">
-      </div>
-      <button class="btn btn-laranja" style="margin-bottom:10px;font-size:17px;padding:16px" onclick="finalizarVenda()">✅ FINALIZAR VENDA</button>
-      <button class="btn btn-outline" onclick="limparCarrinho()">🗑️ Limpar carrinho</button>
     </div>
   </div>
 
