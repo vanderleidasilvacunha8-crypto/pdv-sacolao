@@ -1040,14 +1040,14 @@ function iniciarMic(){
   micRec.maxAlternatives=1;
 
   micAtivo=true;
-  let dentroJanela=true; // janela ativa nos primeiros 3s
+  let dentroJanela=true; // janela ativa nos primeiros 8s
 
   atualizarBotaoMic(true);
   const statusEl=document.getElementById('mic-inline-status');
   statusEl.style.display='block';
-  statusEl.textContent='🟢 Ouvindo... fale agora (3s)';
+  statusEl.textContent='🟢 Ouvindo... fale agora (8s)';
 
-  // Janela de 3 segundos — depois ignora qualquer fala
+  // Janela de 8 segundos — depois ignora qualquer fala
   micJanelaTimer=setTimeout(()=>{
     dentroJanela=false;
     if(micAtivo){
@@ -1056,10 +1056,10 @@ function iniciarMic(){
       atualizarBotaoMic(false);
       if(micRec){ try{micRec.abort();}catch(e){} micRec=null; }
     }
-  },3000);
+  },8000);
 
   // Countdown visual
-  let seg=3;
+  let seg=8;
   const countdown=setInterval(()=>{
     seg--;
     if(seg>0&&micAtivo&&dentroJanela){
