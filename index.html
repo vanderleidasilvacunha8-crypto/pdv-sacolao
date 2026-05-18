@@ -997,7 +997,8 @@ function renderProdutosVenda(filtro=''){
 let _vozItensLocal=[];
 let micRec=null;
 let micAtivo=false;
-let micTextoAcumulado=''; // texto acumulado de todas as falas
+let micTextoAcumulado='';
+let micJanelaTimer=null; // janela de 3s para aceitar voz
 
 function getBuscaTexto(){ return micTextoAcumulado; }
 
@@ -1019,7 +1020,6 @@ function setBuscaDisplay(texto, interim=''){
 }
 
 function mostrarMicFab(show){
-  // FAB externo não é mais usado — botão inline
   if(!show) pararMic();
 }
 
@@ -1035,51 +1035,81 @@ function iniciarMic(){
 
   micRec=new SR();
   micRec.lang='pt-BR';
-  micRec.continuous=false; // cada sessão captura uma fala
+  micRec.continuous=false;
   micRec.interimResults=true;
   micRec.maxAlternatives=1;
 
   micAtivo=true;
+  let dentroJanela=true; // janela ativa nos primeiros 3s
+
   atualizarBotaoMic(true);
-  document.getElementById('mic-inline-status').style.display='block';
-  document.getElementById('mic-inline-status').textContent='🟢 Ouvindo... fale o produto';
+  const statusEl=document.getElementById('mic-inline-status');
+  statusEl.style.display='block';
+  statusEl.textContent='🟢 Ouvindo... fale agora (3s)';
+
+  // Janela de 3 segundos — depois ignora qualquer fala
+  micJanelaTimer=setTimeout(()=>{
+    dentroJanela=false;
+    if(micAtivo){
+      statusEl.textContent='⏱️ Tempo esgotado — toque 🎤 para falar de novo';
+      micAtivo=false;
+      atualizarBotaoMic(false);
+      if(micRec){ try{micRec.abort();}catch(e){} micRec=null; }
+    }
+  },3000);
+
+  // Countdown visual
+  let seg=3;
+  const countdown=setInterval(()=>{
+    seg--;
+    if(seg>0&&micAtivo&&dentroJanela){
+      statusEl.textContent='🟢 Ouvindo... ('+seg+'s)';
+    } else {
+      clearInterval(countdown);
+    }
+  },1000);
 
   micRec.onresult=e=>{
+    if(!dentroJanela) return; // ignora fala fora da janela
+    clearTimeout(micJanelaTimer);
+    clearInterval(countdown);
+    dentroJanela=false;
+
     let interim='',final='';
     for(let i=e.resultIndex;i<e.results.length;i++){
       const t=e.results[i][0].transcript;
       if(e.results[i].isFinal) final+=t; else interim+=t;
     }
+
     if(final){
-      // Acumula no final — adiciona espaço se já tiver texto
       const sep=micTextoAcumulado?', ':'';
       micTextoAcumulado+=(sep+final.trim());
       setBuscaDisplay(micTextoAcumulado);
-      document.getElementById('mic-inline-status').textContent='⏸ Pausado — toque 🎤 para continuar';
+      statusEl.textContent='✅ Reconhecido — toque 🎤 para continuar';
       micAtivo=false;
       atualizarBotaoMic(false);
-      // Processa automaticamente
       filtrarProdutosVendaTexto(micTextoAcumulado.toLowerCase());
     } else if(interim){
-      // Mostra interim sem alterar o acumulado
       setBuscaDisplay(micTextoAcumulado, interim);
-      document.getElementById('mic-inline-status').textContent='🎙️ '+interim;
+      statusEl.textContent='🎙️ '+interim;
     }
   };
 
   micRec.onerror=e=>{
+    clearTimeout(micJanelaTimer);
+    clearInterval(countdown);
     if(e.error==='no-speech'){
-      document.getElementById('mic-inline-status').textContent='🔇 Não ouvi — toque 🎤 para tentar de novo';
-      micAtivo=false;
-      atualizarBotaoMic(false);
-      return;
+      statusEl.textContent='🔇 Não ouvi — toque 🎤 para tentar de novo';
+    } else {
+      toast('🎤 Erro: '+e.error);
     }
-    toast('🎤 Erro: '+e.error);
-    pararMic();
+    micAtivo=false;
+    atualizarBotaoMic(false);
   };
 
   micRec.onend=()=>{
-    // Se ainda estava ativo (sem resultado final), reseta botão
+    clearTimeout(micJanelaTimer);
+    clearInterval(countdown);
     if(micAtivo){
       micAtivo=false;
       atualizarBotaoMic(false);
@@ -1091,6 +1121,7 @@ function iniciarMic(){
 
 function pararMic(){
   micAtivo=false;
+  clearTimeout(micJanelaTimer);
   if(micRec){ try{micRec.abort();}catch(e){} micRec=null; }
   atualizarBotaoMic(false);
   document.getElementById('mic-inline-status').style.display='none';
@@ -1122,34 +1153,84 @@ function filtrarProdutosVendaTexto(texto){
   if(!texto){ renderProdutosVenda(''); return; }
   const itens=interpretarVoz(texto);
   if(itens.length>0) mostrarPreviewVoz(itens);
-  else renderProdutosVenda(texto);
+  else {
+    // Nenhum produto reconhecido — avisa e não altera lista
+    const statusEl=document.getElementById('mic-inline-status');
+    statusEl.style.display='block';
+    statusEl.textContent='⚠️ Produto não encontrado — toque 🎤 e fale de novo';
+    renderProdutosVenda('');
+  }
 }
 
 function interpretarVoz(texto){
-  const nums={'um':1,'uma':1,'dois':2,'duas':2,'três':3,'tres':3,'quatro':4,'cinco':5,'seis':6,'sete':7,'oito':8,'nove':9,'dez':10,'meio':0.5,'meia':0.5};
-  let t=texto;
-  Object.entries(nums).forEach(([p,v])=>{ t=t.replace(new RegExp('\\b'+p+'\\b','g'),v+' '); });
+  // Converte palavras numéricas
+  const nums={'um':1,'uma':1,'dois':2,'duas':2,'três':3,'tres':3,'quatro':4,'cinco':5,'seis':6,'sete':7,'oito':8,'nove':9,'dez':10,'meio':0.5,'meia':0.5,'duzentos':200,'trezentos':300,'quatrocentos':400,'quinhentos':500,'seiscentos':600,'setecentos':700,'oitocentos':800,'novecentos':900};
+  let t=texto.toLowerCase();
+  Object.entries(nums).forEach(([p,v])=>{ t=t.replace(new RegExp('\\b'+p+'\\b','g'),String(v)+' '); });
   t=t.replace(/(\d+),(\d+)/g,'$1.$2');
-  const res=[];
-  Object.values(dadosUsuario.produtos||{}).forEach(prod=>{
-    const np=prod.nome.toLowerCase();
-    const pals=np.split(' ');
-    const aparece=pals.some(pal=>pal.length>2&&t.includes(pal));
-    if(!aparece) return;
-    const pal=pals.find(p=>p.length>2&&t.includes(p));
-    const idx=t.indexOf(pal);
-    const trecho=t.substring(Math.max(0,idx-30),idx+np.length+5);
-    let qty=1,descQty='';
-    const mKg=trecho.match(/(\d+\.?\d*)\s*(?:kg|quilo|quilos|kilo)/);
-    const mG=trecho.match(/(\d+)\s*(?:g|gramas|grama)\b/);
-    const mN=trecho.match(/(\d+\.?\d*)\s*/);
-    if(mKg){ qty=parseFloat(mKg[1]); descQty=qty%1===0?qty+' kg':qty.toFixed(2).replace('.',',')+' kg'; }
-    else if(mG){ qty=parseFloat(mG[1])/1000; descQty=parseFloat(mG[1])+'g'; }
-    else if(mN&&parseFloat(mN[1])>0){ qty=parseFloat(mN[1]); descQty=qty+' '+prod.unidade; }
-    else { qty=1; descQty='1 '+prod.unidade; }
-    res.push({prod,qty,descQty,total:prod.preco*qty});
+
+  // Mapa de produtos encontrados (somando quantidades do mesmo produto)
+  const mapa={}; // prodId -> {prod, qty, gramas}
+
+  // Divide o texto em segmentos por vírgula ou "e"
+  const segmentos=t.split(/[,e]\s+|,/);
+
+  segmentos.forEach(seg=>{
+    seg=seg.trim();
+    if(!seg) return;
+
+    // Tenta encontrar produto cadastrado no segmento
+    let prodEncontrado=null;
+    let melhorScore=0;
+
+    Object.values(dadosUsuario.produtos||{}).forEach(prod=>{
+      const np=prod.nome.toLowerCase();
+      const pals=np.split(' ').filter(p=>p.length>2);
+      // Conta quantas palavras do nome do produto aparecem no segmento
+      const matches=pals.filter(pal=>seg.includes(pal)).length;
+      const score=matches/Math.max(pals.length,1);
+      // Só aceita se pelo menos 50% das palavras do nome aparecerem
+      if(score>=0.5&&score>melhorScore){
+        melhorScore=score;
+        prodEncontrado=prod;
+      }
+    });
+
+    if(!prodEncontrado) return; // Ignora segmento sem produto cadastrado
+
+    // Extrai quantidade do segmento
+    let qty=1, gramas=0;
+    const mKg=seg.match(/(\d+\.?\d*)\s*(?:kg|quilo|quilos|kilo|kilos)/);
+    const mG=seg.match(/(\d+)\s*(?:g\b|gramas?|grama\b)/);
+    const mN=seg.match(/(\d+\.?\d*)/);
+
+    if(mKg){ qty=parseFloat(mKg[1]); gramas=qty*1000; }
+    else if(mG){ gramas=parseFloat(mG[1]); qty=gramas/1000; }
+    else if(mN&&parseFloat(mN[1])>0){ qty=parseFloat(mN[1]); gramas=qty*1000; }
+    else { qty=1; gramas=1000; }
+
+    // Soma no mapa
+    if(mapa[prodEncontrado.id]){
+      mapa[prodEncontrado.id].qty+=qty;
+      mapa[prodEncontrado.id].gramas+=gramas;
+    } else {
+      mapa[prodEncontrado.id]={prod:prodEncontrado, qty, gramas};
+    }
   });
-  return res;
+
+  // Monta resultado com descQty formatado
+  return Object.values(mapa).map(({prod,qty,gramas})=>{
+    let descQty;
+    const isKg=['kg','litro'].includes(prod.unidade);
+    if(isKg){
+      if(gramas>=1000&&gramas%1000===0) descQty=(gramas/1000)+' kg';
+      else if(gramas>=1000) descQty=(gramas/1000).toFixed(2).replace('.',',')+' kg';
+      else descQty=gramas+'g';
+    } else {
+      descQty=qty+' '+prod.unidade;
+    }
+    return {prod, qty, descQty, total:prod.preco*qty};
+  });
 }
 
 function mostrarPreviewVoz(itens){
