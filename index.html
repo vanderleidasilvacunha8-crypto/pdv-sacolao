@@ -398,49 +398,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 
   <!-- VENDER -->
   <div class="pagina" id="pag-vender">
-    <div class="card">
-      <div class="card-titulo">🛒 Vender produto</div>
 
-      <!-- BARRA DE BUSCA + MIC -->
-      <div style="background:var(--verde-s);border-radius:14px;padding:14px;margin-bottom:14px">
-        <div style="font-size:11px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🎤 Comando de voz / Busca</div>
-
-        <!-- Linha principal: display de texto + botão mic + limpar -->
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-          <!-- Área de exibição (readonly, não recebe foco/cursor) -->
-          <div id="busca-display"
-            style="flex:1;min-height:46px;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px;background:white;color:var(--texto);word-break:break-word;line-height:1.4;cursor:default"
-            onclick="this.blur()">
-            <span id="busca-placeholder" style="color:#aaa">Toque no 🎤 e fale os produtos...</span>
-            <span id="busca-texto" style="display:none"></span>
-          </div>
-
-          <!-- Botão microfone -->
-          <button id="btn-mic-inline" onclick="toggleMic()"
-            style="width:52px;height:52px;border-radius:50%;border:none;background:var(--verde);color:white;font-size:24px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(26,58,42,0.3);transition:all 0.2s">
-            🎤
-          </button>
-
-          <!-- Limpar -->
-          <button onclick="limparBusca()" title="Limpar"
-            style="width:40px;height:40px;border-radius:10px;border:none;background:#ddd;font-size:16px;cursor:pointer;flex-shrink:0">✕</button>
-        </div>
-
-        <!-- Status do mic -->
-        <div id="mic-inline-status" style="display:none;font-size:12px;color:var(--verde);font-weight:600;text-align:center;margin-bottom:6px">
-          🟢 Ouvindo... fale o produto
-        </div>
-
-        <!-- Botão confirmar (aparece quando há texto) -->
-        <button id="btn-confirmar-voz" onclick="confirmarBuscaVoz()"
-          style="display:none;width:100%;padding:12px;border-radius:10px;border:none;background:var(--verde);color:white;font-size:14px;font-weight:600;cursor:pointer">
-          ✅ Buscar / Confirmar
-        </button>
-      </div>
-
-      <div style="font-size:12px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase">📦 Produtos disponíveis</div>
-      <div id="lista-produtos-venda"></div>
-    </div>
+    <!-- CARRINHO EM CIMA -->
     <div class="card" id="card-carrinho" style="display:none">
       <div class="card-titulo">🛒 Carrinho</div>
       <div id="lista-carrinho"></div>
@@ -459,7 +418,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
       <button class="btn btn-laranja" style="margin-bottom:10px;font-size:17px;padding:16px" onclick="finalizarVenda()">✅ FINALIZAR VENDA</button>
       <button class="btn btn-outline" onclick="limparCarrinho()">🗑️ Limpar carrinho</button>
     </div>
-  </div>
+
+    <!-- BUSCA + PRODUTOS EMBAIXO -->
+    <div class="card">
+      <div class="card-titulo">🛒 Adicionar produto</div>
+
+      <!-- INPUT NATIVO COM MIC DO GOOGLE -->
+      <div style="background:var(--verde-s);border-radius:14px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🎤 Fale ou digite o produto</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+          <input type="text" id="busca-venda"
+            placeholder="Ex: banana prata 1 kilo"
+            inputmode="text"
+            autocomplete="off"
+            style="flex:1;padding:13px 14px;border-radius:10px;border:1.5px solid var(--borda);font-size:15px;outline:none;background:white"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();processarInputVoz();}">
+          <button onclick="limparBusca()" title="Limpar"
+            style="width:42px;height:48px;border-radius:10px;border:none;background:#ddd;font-size:16px;cursor:pointer;flex-shrink:0">✕</button>
+        </div>
+        <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:10px">
+          💡 Toque no campo → use o <b>🎤 do teclado Google</b> → pressione Enter ou o botão abaixo
+        </div>
+        <button onclick="processarInputVoz()"
+          style="width:100%;padding:13px;border-radius:10px;border:none;background:var(--verde);color:white;font-size:15px;font-weight:700;cursor:pointer">
+          ✅ Adicionar produto
+        </button>
+        <div id="mic-inline-status" style="display:none;font-size:12px;font-weight:600;text-align:center;margin-top:8px;padding:8px;border-radius:8px;background:white"></div>
+      </div>
+
+      <div style="font-size:12px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase">📦 Produtos disponíveis</div>
+      <div id="lista-produtos-venda"></div>
+    </div>
 
   <!-- PRODUTOS -->
   <div class="pagina" id="pag-produtos">
@@ -994,7 +983,6 @@ function renderProdutosVenda(filtro=''){
 }
 
 // ===================== MICROFONE DEDICADO =====================
-let _vozItensLocal=[];
 let micRec=null;
 let micAtivo=false;
 let micTextoAcumulado='';
@@ -1028,72 +1016,34 @@ function toggleMic(){
   else iniciarMic();
 }
 
-function iniciarMic(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){ toast('❌ Seu navegador não suporta reconhecimento de voz'); return; }
+// ===================== VOZ / BUSCA (Input nativo Google) =====================
+let _vozItensLocal=[];
+let micRec=null;
+let micAtivo=false;
+let micTextoAcumulado='';
+let micJanelaTimer=null;
+
+function mostrarMicFab(show){ if(!show) pararMic(); }
+function toggleMic(){}
+function pararMic(){
+  micAtivo=false;
   if(micRec){ try{micRec.stop();}catch(e){} micRec=null; }
-
-  micRec=new SR();
-  micRec.lang='pt-BR';
-  micRec.continuous=true;
-  micRec.interimResults=true;
-  micRec.maxAlternatives=3; // pega até 3 alternativas para escolher melhor
-
-  micAtivo=true;
-  let jaCapturou=false;
-
-  atualizarBotaoMic(true);
-  const statusEl=document.getElementById('mic-inline-status');
-  statusEl.style.display='block';
-  statusEl.textContent='🟢 Fale o produto e a quantidade...';
-
-  micJanelaTimer=setTimeout(()=>{
-    if(micAtivo&&!jaCapturou){
-      statusEl.textContent='⏱️ Tempo esgotado — toque 🎤 de novo';
-      pararMic();
-    }
-  },8000);
-
-  micRec.onresult=e=>{
-    let interim='', finalTexto='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal) finalTexto+=e.results[i][0].transcript;
-      else interim+=e.results[i][0].transcript;
-    }
-
-    if(interim&&!jaCapturou){
-      statusEl.textContent='🎙️ '+interim;
-    }
-
-    if(finalTexto&&!jaCapturou){
-      jaCapturou=true;
-      clearTimeout(micJanelaTimer);
-      processarFalaUnicaProduto(finalTexto.trim());
-    }
-  };
-
-  micRec.onerror=e=>{
-    clearTimeout(micJanelaTimer);
-    if(e.error==='aborted'||e.error==='no-speech') return;
-    statusEl.textContent='⚠️ '+e.error+' — toque 🎤 de novo';
-    micAtivo=false;
-    atualizarBotaoMic(false);
-  };
-
-  micRec.onend=()=>{
-    clearTimeout(micJanelaTimer);
-    if(micAtivo&&!jaCapturou){
-      try{ micRec.start(); }catch(e){ micAtivo=false; atualizarBotaoMic(false); }
-    }
-  };
-
-  try{ micRec.start(); }catch(e){ toast('❌ Não foi possível iniciar microfone'); micAtivo=false; atualizarBotaoMic(false); }
 }
+function atualizarBotaoMic(){}
+function setBuscaDisplay(){}
+function confirmarBuscaVoz(){ processarInputVoz(); }
+function filtrarProdutosVenda(){ processarInputVoz(); }
 
-// Processa UMA fala → encontra produto + quantidade → adiciona direto ao carrinho
-function processarFalaUnicaProduto(fala){
+// Função principal — processa o que foi digitado/falado no input
+function processarInputVoz(){
+  const input=document.getElementById('busca-venda');
+  const fala=(input.value||'').trim();
   const statusEl=document.getElementById('mic-inline-status');
-  pararMic();
+
+  if(!fala){
+    statusEl.style.display='none';
+    return;
+  }
 
   // Normaliza texto
   const nums={
@@ -1104,7 +1054,6 @@ function processarFalaUnicaProduto(fala){
     'setecentos':700,'oitocentos':800,'novecentos':900
   };
   let t=fala.toLowerCase();
-  // Remove vírgulas entre números que o Speech API insere
   t=t.replace(/(\d)\s*,\s*(\d)/g,'$1.$2');
   t=t.replace(/,/g,' ');
   Object.entries(nums).forEach(([p,v])=>{
@@ -1112,46 +1061,24 @@ function processarFalaUnicaProduto(fala){
   });
   t=t.replace(/\s+/g,' ').trim();
 
-  // Encontra o produto com melhor match
+  // Encontra melhor produto
   const produtos=Object.values(dadosUsuario.produtos||{});
-  let melhorProd=null, melhorMatches=0;
+  let melhorProd=null, melhorScore=0;
 
   produtos.forEach(prod=>{
     const pals=prod.nome.toLowerCase().split(' ').filter(p=>p.length>2);
     if(!pals.length) return;
     const matches=pals.filter(pal=>t.includes(pal)).length;
-    // Precisa bater TODAS as palavras do nome
-    if(matches===pals.length&&matches>melhorMatches){
-      melhorMatches=matches;
-      melhorProd=prod;
-    }
+    const score=matches/pals.length;
+    if(score>melhorScore){ melhorScore=score; melhorProd=prod; }
   });
 
-  // Se não achou com 100%, tenta com maior score único
-  if(!melhorProd){
-    let candidatos=[];
-    produtos.forEach(prod=>{
-      const pals=prod.nome.toLowerCase().split(' ').filter(p=>p.length>2);
-      if(!pals.length) return;
-      const matches=pals.filter(pal=>t.includes(pal)).length;
-      if(matches>0) candidatos.push({prod,matches,total:pals.length});
-    });
-    // Ordena por proporção e pega o melhor único
-    candidatos.sort((a,b)=>(b.matches/b.total)-(a.matches/a.total));
-    if(candidatos.length>0&&candidatos[0].matches/candidatos[0].total>=0.6){
-      // Só usa se for único nessa proporção ou muito melhor que o segundo
-      if(candidatos.length===1||
-         (candidatos[0].matches/candidatos[0].total)>(candidatos[1].matches/candidatos[1].total)){
-        melhorProd=candidatos[0].prod;
-      }
-    }
-  }
-
-  if(!melhorProd){
+  // Exige pelo menos 60% de match
+  if(!melhorProd||melhorScore<0.6){
     statusEl.style.display='block';
-    statusEl.textContent='⚠️ "'+fala+'" — produto não encontrado. Toque 🎤 e tente de novo';
-    setBuscaDisplay('');
-    micTextoAcumulado='';
+    statusEl.style.color='var(--laranja)';
+    statusEl.style.background='#fdecea';
+    statusEl.textContent='⚠️ "'+fala+'" — produto não encontrado';
     return;
   }
 
@@ -1162,9 +1089,13 @@ function processarFalaUnicaProduto(fala){
   const mG=t.match(/(\d+)\s*(?:g\b|gramas?)/);
   const mN=t.match(/(\d+\.?\d*)/);
 
-  if(mKg){ qty=parseFloat(mKg[1]); descQty=qty+(qty===1?' kg':' kg'); }
-  else if(mG){ qty=parseFloat(mG[1])/1000; descQty=parseFloat(mG[1])+'g'; }
-  else if(mN&&parseFloat(mN[1])>0&&parseFloat(mN[1])<=500){
+  if(mKg){
+    qty=parseFloat(mKg[1]);
+    descQty=qty+' kg';
+  } else if(mG){
+    qty=parseFloat(mG[1])/1000;
+    descQty=parseFloat(mG[1])+'g';
+  } else if(mN&&parseFloat(mN[1])>0&&parseFloat(mN[1])<=500){
     qty=parseFloat(mN[1]);
     descQty=isKg?(qty+' kg'):(qty+' '+melhorProd.unidade);
   } else {
@@ -1174,7 +1105,7 @@ function processarFalaUnicaProduto(fala){
 
   const total=melhorProd.preco*qty;
 
-  // Adiciona direto ao carrinho
+  // Adiciona ao carrinho
   carrinho.push({
     id:melhorProd.id, emoji:melhorProd.emoji,
     nome:melhorProd.nome, preco:melhorProd.preco,
@@ -1182,53 +1113,32 @@ function processarFalaUnicaProduto(fala){
   });
 
   renderCarrinho();
-  micTextoAcumulado='';
-  setBuscaDisplay('');
+
+  // Feedback visual
   statusEl.style.display='block';
-  statusEl.textContent='✅ '+melhorProd.emoji+' '+melhorProd.nome+' ('+descQty+') — toque 🎤 para mais';
-  toast('✅ '+melhorProd.emoji+' '+melhorProd.nome+' adicionado!',2000);
-  setTimeout(()=>document.getElementById('card-carrinho')?.scrollIntoView({behavior:'smooth'}),300);
+  statusEl.style.color='var(--verde)';
+  statusEl.style.background='var(--verde-s)';
+  statusEl.textContent='✅ '+melhorProd.emoji+' '+melhorProd.nome+' ('+descQty+') adicionado!';
+
+  // Limpa input e foca de novo para próximo produto
+  input.value='';
+  setTimeout(()=>{ input.focus(); },300);
+
+  toast('✅ '+melhorProd.emoji+' '+melhorProd.nome+' adicionado!',1800);
+  document.getElementById('card-carrinho').scrollIntoView({behavior:'smooth'});
 }
 
-function pararMic(){
-  micAtivo=false;
-  clearTimeout(micJanelaTimer);
-  if(micRec){ try{micRec.stop();}catch(e){} micRec=null; }
-  atualizarBotaoMic(false);
-}
-
-function atualizarBotaoMic(ativo){
-  const btn=document.getElementById('btn-mic-inline');
-  if(!btn) return;
-  if(ativo){
-    btn.textContent='⏹';
-    btn.style.background='var(--laranja)';
-    btn.style.animation='micPulse 1s ease-in-out infinite';
-  } else {
-    btn.textContent='🎤';
-    btn.style.background='var(--verde)';
-    btn.style.animation='';
-  }
-}
-
-function confirmarBuscaVoz(){
-  filtrarProdutosVendaTexto(micTextoAcumulado.toLowerCase());
-}
-
-function filtrarProdutosVenda(){
-  filtrarProdutosVendaTexto(micTextoAcumulado.toLowerCase());
+function limparBusca(){
+  const input=document.getElementById('busca-venda');
+  if(input) input.value='';
+  const statusEl=document.getElementById('mic-inline-status');
+  if(statusEl) statusEl.style.display='none';
+  renderProdutosVenda();
 }
 
 function filtrarProdutosVendaTexto(texto){
   if(!texto){ renderProdutosVenda(''); return; }
-  const itens=interpretarVoz(texto);
-  if(itens.length>0) mostrarPreviewVoz(itens);
-  else {
-    const statusEl=document.getElementById('mic-inline-status');
-    statusEl.style.display='block';
-    statusEl.textContent='⚠️ Produto não encontrado — toque 🎤 e fale de novo';
-    renderProdutosVenda('');
-  }
+  renderProdutosVenda(texto);
 }
 
 function interpretarVoz(texto){
