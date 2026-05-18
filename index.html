@@ -409,6 +409,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
             placeholder="Ex: banana prata 1 kilo"
             autocomplete="off"
             style="flex:1;padding:13px 14px;border-radius:10px;border:1.5px solid var(--borda);font-size:15px;outline:none;background:white"
+            onfocus="ativarMicTeclado(this)"
             onkeydown="if(event.key==='Enter'){event.preventDefault();processarInputVoz();}">
           <button onclick="document.getElementById('busca-venda').value='';document.getElementById('mic-inline-status').style.display='none';" title="Limpar"
             style="width:42px;height:48px;border-radius:10px;border:none;background:#ddd;font-size:16px;cursor:pointer;flex-shrink:0">✕</button>
@@ -1026,9 +1027,21 @@ function setBuscaDisplay(){}
 function confirmarBuscaVoz(){ processarInputVoz(); }
 function filtrarProdutosVenda(){ processarInputVoz(); }
 
+// Quando toca no campo, coloca o cursor no fim e tenta abrir microfone
+function ativarMicTeclado(input){
+  // Seleciona o texto todo para facilitar substituição
+  setTimeout(()=>{
+    input.setSelectionRange(input.value.length, input.value.length);
+  },100);
+}
+
 // Função principal — processa o que foi digitado/falado no input
 function processarInputVoz(){
   const input=document.getElementById('busca-venda');
+
+  // Fecha o teclado (blur)
+  input.blur();
+
   const fala=(input.value||'').trim();
   const statusEl=document.getElementById('mic-inline-status');
 
@@ -1112,12 +1125,12 @@ function processarInputVoz(){
   statusEl.style.background='var(--verde-s)';
   statusEl.textContent='✅ '+melhorProd.emoji+' '+melhorProd.nome+' ('+descQty+') adicionado!';
 
-  // Limpa input e foca de novo para próximo produto
+  // Limpa input — teclado já está fechado (blur foi chamado antes)
   input.value='';
-  setTimeout(()=>{ input.focus(); },300);
 
   toast('✅ '+melhorProd.emoji+' '+melhorProd.nome+' adicionado!',1800);
-  document.getElementById('card-carrinho').scrollIntoView({behavior:'smooth'});
+  // Rola para mostrar o carrinho atualizado
+  setTimeout(()=>document.getElementById('card-carrinho')?.scrollIntoView({behavior:'smooth'}),200);
 }
 
 function limparBusca(){
