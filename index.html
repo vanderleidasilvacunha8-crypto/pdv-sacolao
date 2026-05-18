@@ -1035,9 +1035,9 @@ function iniciarMic(){
 
   micRec=new SR();
   micRec.lang='pt-BR';
-  micRec.continuous=true;      // mantém aberto no Android
+  micRec.continuous=true;
   micRec.interimResults=true;
-  micRec.maxAlternatives=1;
+  micRec.maxAlternatives=3; // pega até 3 alternativas para escolher melhor
 
   micAtivo=true;
   let jaCapturou=false;
@@ -1045,56 +1045,35 @@ function iniciarMic(){
   atualizarBotaoMic(true);
   const statusEl=document.getElementById('mic-inline-status');
   statusEl.style.display='block';
-  statusEl.textContent='🟢 Ouvindo... fale agora (8s)';
+  statusEl.textContent='🟢 Fale o produto e a quantidade...';
 
-  // Timer de 8s — fecha após silêncio prolongado
   micJanelaTimer=setTimeout(()=>{
     if(micAtivo&&!jaCapturou){
-      statusEl.textContent='⏱️ Tempo esgotado — toque 🎤 para falar de novo';
+      statusEl.textContent='⏱️ Tempo esgotado — toque 🎤 de novo';
       pararMic();
     }
   },8000);
 
-  // Countdown visual
-  let seg=8;
-  const countdown=setInterval(()=>{
-    seg--;
-    if(seg>0&&micAtivo&&!jaCapturou){
-      statusEl.textContent='🟢 Ouvindo... ('+seg+'s)';
-    } else {
-      clearInterval(countdown);
-    }
-  },1000);
-
   micRec.onresult=e=>{
-    clearTimeout(micJanelaTimer);
-    clearInterval(countdown);
-
-    let interim='',final='';
+    let interim='', finalTexto='';
     for(let i=e.resultIndex;i<e.results.length;i++){
-      const t=e.results[i][0].transcript;
-      if(e.results[i].isFinal) final+=t; else interim+=t;
+      if(e.results[i].isFinal) finalTexto+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
     }
 
     if(interim&&!jaCapturou){
-      setBuscaDisplay(micTextoAcumulado, interim);
       statusEl.textContent='🎙️ '+interim;
     }
 
-    if(final&&!jaCapturou){
+    if(finalTexto&&!jaCapturou){
       jaCapturou=true;
-      const sep=micTextoAcumulado?', ':'';
-      micTextoAcumulado+=(sep+final.trim());
-      setBuscaDisplay(micTextoAcumulado);
-      statusEl.textContent='✅ Reconhecido — toque 🎤 para continuar';
-      pararMic();
-      filtrarProdutosVendaTexto(micTextoAcumulado.toLowerCase());
+      clearTimeout(micJanelaTimer);
+      processarFalaUnicaProduto(finalTexto.trim());
     }
   };
 
   micRec.onerror=e=>{
     clearTimeout(micJanelaTimer);
-    clearInterval(countdown);
     if(e.error==='aborted'||e.error==='no-speech') return;
     statusEl.textContent='⚠️ '+e.error+' — toque 🎤 de novo';
     micAtivo=false;
@@ -1103,17 +1082,112 @@ function iniciarMic(){
 
   micRec.onend=()=>{
     clearTimeout(micJanelaTimer);
-    clearInterval(countdown);
-    // Se continuous=true e não capturou ainda, reinicia automaticamente
     if(micAtivo&&!jaCapturou){
       try{ micRec.start(); }catch(e){ micAtivo=false; atualizarBotaoMic(false); }
-    } else if(!jaCapturou){
-      micAtivo=false;
-      atualizarBotaoMic(false);
     }
   };
 
-  try{ micRec.start(); } catch(e){ toast('❌ Não foi possível iniciar microfone'); micAtivo=false; atualizarBotaoMic(false); }
+  try{ micRec.start(); }catch(e){ toast('❌ Não foi possível iniciar microfone'); micAtivo=false; atualizarBotaoMic(false); }
+}
+
+// Processa UMA fala → encontra produto + quantidade → adiciona direto ao carrinho
+function processarFalaUnicaProduto(fala){
+  const statusEl=document.getElementById('mic-inline-status');
+  pararMic();
+
+  // Normaliza texto
+  const nums={
+    'um':1,'uma':1,'dois':2,'duas':2,'três':3,'tres':3,'quatro':4,
+    'cinco':5,'seis':6,'sete':7,'oito':8,'nove':9,'dez':10,
+    'meio':0.5,'meia':0.5,'duzentos':200,'trezentos':300,
+    'quatrocentos':400,'quinhentos':500,'seiscentos':600,
+    'setecentos':700,'oitocentos':800,'novecentos':900
+  };
+  let t=fala.toLowerCase();
+  // Remove vírgulas entre números que o Speech API insere
+  t=t.replace(/(\d)\s*,\s*(\d)/g,'$1.$2');
+  t=t.replace(/,/g,' ');
+  Object.entries(nums).forEach(([p,v])=>{
+    t=t.replace(new RegExp('\\b'+p+'\\b','g'),String(v)+' ');
+  });
+  t=t.replace(/\s+/g,' ').trim();
+
+  // Encontra o produto com melhor match
+  const produtos=Object.values(dadosUsuario.produtos||{});
+  let melhorProd=null, melhorMatches=0;
+
+  produtos.forEach(prod=>{
+    const pals=prod.nome.toLowerCase().split(' ').filter(p=>p.length>2);
+    if(!pals.length) return;
+    const matches=pals.filter(pal=>t.includes(pal)).length;
+    // Precisa bater TODAS as palavras do nome
+    if(matches===pals.length&&matches>melhorMatches){
+      melhorMatches=matches;
+      melhorProd=prod;
+    }
+  });
+
+  // Se não achou com 100%, tenta com maior score único
+  if(!melhorProd){
+    let candidatos=[];
+    produtos.forEach(prod=>{
+      const pals=prod.nome.toLowerCase().split(' ').filter(p=>p.length>2);
+      if(!pals.length) return;
+      const matches=pals.filter(pal=>t.includes(pal)).length;
+      if(matches>0) candidatos.push({prod,matches,total:pals.length});
+    });
+    // Ordena por proporção e pega o melhor único
+    candidatos.sort((a,b)=>(b.matches/b.total)-(a.matches/a.total));
+    if(candidatos.length>0&&candidatos[0].matches/candidatos[0].total>=0.6){
+      // Só usa se for único nessa proporção ou muito melhor que o segundo
+      if(candidatos.length===1||
+         (candidatos[0].matches/candidatos[0].total)>(candidatos[1].matches/candidatos[1].total)){
+        melhorProd=candidatos[0].prod;
+      }
+    }
+  }
+
+  if(!melhorProd){
+    statusEl.style.display='block';
+    statusEl.textContent='⚠️ "'+fala+'" — produto não encontrado. Toque 🎤 e tente de novo';
+    setBuscaDisplay('');
+    micTextoAcumulado='';
+    return;
+  }
+
+  // Extrai quantidade
+  const isKg=['kg','litro'].includes(melhorProd.unidade);
+  let qty=1, descQty='';
+  const mKg=t.match(/(\d+\.?\d*)\s*(?:kg|kilo|quilos?)/);
+  const mG=t.match(/(\d+)\s*(?:g\b|gramas?)/);
+  const mN=t.match(/(\d+\.?\d*)/);
+
+  if(mKg){ qty=parseFloat(mKg[1]); descQty=qty+(qty===1?' kg':' kg'); }
+  else if(mG){ qty=parseFloat(mG[1])/1000; descQty=parseFloat(mG[1])+'g'; }
+  else if(mN&&parseFloat(mN[1])>0&&parseFloat(mN[1])<=500){
+    qty=parseFloat(mN[1]);
+    descQty=isKg?(qty+' kg'):(qty+' '+melhorProd.unidade);
+  } else {
+    qty=1;
+    descQty='1 '+melhorProd.unidade;
+  }
+
+  const total=melhorProd.preco*qty;
+
+  // Adiciona direto ao carrinho
+  carrinho.push({
+    id:melhorProd.id, emoji:melhorProd.emoji,
+    nome:melhorProd.nome, preco:melhorProd.preco,
+    unidade:melhorProd.unidade, qty, descQty, total
+  });
+
+  renderCarrinho();
+  micTextoAcumulado='';
+  setBuscaDisplay('');
+  statusEl.style.display='block';
+  statusEl.textContent='✅ '+melhorProd.emoji+' '+melhorProd.nome+' ('+descQty+') — toque 🎤 para mais';
+  toast('✅ '+melhorProd.emoji+' '+melhorProd.nome+' adicionado!',2000);
+  setTimeout(()=>document.getElementById('card-carrinho')?.scrollIntoView({behavior:'smooth'}),300);
 }
 
 function pararMic(){
@@ -1121,7 +1195,6 @@ function pararMic(){
   clearTimeout(micJanelaTimer);
   if(micRec){ try{micRec.stop();}catch(e){} micRec=null; }
   atualizarBotaoMic(false);
-  document.getElementById('mic-inline-status').style.display='none';
 }
 
 function atualizarBotaoMic(ativo){
@@ -1151,7 +1224,6 @@ function filtrarProdutosVendaTexto(texto){
   const itens=interpretarVoz(texto);
   if(itens.length>0) mostrarPreviewVoz(itens);
   else {
-    // Nenhum produto reconhecido — avisa e não altera lista
     const statusEl=document.getElementById('mic-inline-status');
     statusEl.style.display='block';
     statusEl.textContent='⚠️ Produto não encontrado — toque 🎤 e fale de novo';
