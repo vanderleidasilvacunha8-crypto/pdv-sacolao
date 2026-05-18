@@ -1031,30 +1031,27 @@ function toggleMic(){
 function iniciarMic(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){ toast('❌ Seu navegador não suporta reconhecimento de voz'); return; }
-  if(micRec){ try{micRec.abort();}catch(e){} micRec=null; }
+  if(micRec){ try{micRec.stop();}catch(e){} micRec=null; }
 
   micRec=new SR();
   micRec.lang='pt-BR';
-  micRec.continuous=false;
+  micRec.continuous=true;      // mantém aberto no Android
   micRec.interimResults=true;
   micRec.maxAlternatives=1;
 
   micAtivo=true;
-  let dentroJanela=true; // janela ativa nos primeiros 8s
+  let jaCapturou=false;
 
   atualizarBotaoMic(true);
   const statusEl=document.getElementById('mic-inline-status');
   statusEl.style.display='block';
   statusEl.textContent='🟢 Ouvindo... fale agora (8s)';
 
-  // Janela de 8 segundos — depois ignora qualquer fala
+  // Timer de 8s — fecha após silêncio prolongado
   micJanelaTimer=setTimeout(()=>{
-    dentroJanela=false;
-    if(micAtivo){
+    if(micAtivo&&!jaCapturou){
       statusEl.textContent='⏱️ Tempo esgotado — toque 🎤 para falar de novo';
-      micAtivo=false;
-      atualizarBotaoMic(false);
-      if(micRec){ try{micRec.stop();}catch(e){} }
+      pararMic();
     }
   },8000);
 
@@ -1062,7 +1059,7 @@ function iniciarMic(){
   let seg=8;
   const countdown=setInterval(()=>{
     seg--;
-    if(seg>0&&micAtivo&&dentroJanela){
+    if(seg>0&&micAtivo&&!jaCapturou){
       statusEl.textContent='🟢 Ouvindo... ('+seg+'s)';
     } else {
       clearInterval(countdown);
@@ -1070,10 +1067,8 @@ function iniciarMic(){
   },1000);
 
   micRec.onresult=e=>{
-    if(!dentroJanela) return;
     clearTimeout(micJanelaTimer);
     clearInterval(countdown);
-    dentroJanela=false;
 
     let interim='',final='';
     for(let i=e.resultIndex;i<e.results.length;i++){
@@ -1081,30 +1076,27 @@ function iniciarMic(){
       if(e.results[i].isFinal) final+=t; else interim+=t;
     }
 
-    if(final){
+    if(interim&&!jaCapturou){
+      setBuscaDisplay(micTextoAcumulado, interim);
+      statusEl.textContent='🎙️ '+interim;
+    }
+
+    if(final&&!jaCapturou){
+      jaCapturou=true;
       const sep=micTextoAcumulado?', ':'';
       micTextoAcumulado+=(sep+final.trim());
       setBuscaDisplay(micTextoAcumulado);
       statusEl.textContent='✅ Reconhecido — toque 🎤 para continuar';
-      micAtivo=false;
-      atualizarBotaoMic(false);
+      pararMic();
       filtrarProdutosVendaTexto(micTextoAcumulado.toLowerCase());
-    } else if(interim){
-      setBuscaDisplay(micTextoAcumulado, interim);
-      statusEl.textContent='🎙️ '+interim;
     }
   };
 
   micRec.onerror=e=>{
     clearTimeout(micJanelaTimer);
     clearInterval(countdown);
-    // 'aborted' é esperado quando paramos manualmente — ignora silenciosamente
-    if(e.error==='aborted') return;
-    if(e.error==='no-speech'){
-      statusEl.textContent='🔇 Não ouvi — toque 🎤 para tentar de novo';
-    } else {
-      statusEl.textContent='⚠️ Erro: '+e.error+' — toque 🎤 de novo';
-    }
+    if(e.error==='aborted'||e.error==='no-speech') return;
+    statusEl.textContent='⚠️ '+e.error+' — toque 🎤 de novo';
     micAtivo=false;
     atualizarBotaoMic(false);
   };
@@ -1112,10 +1104,12 @@ function iniciarMic(){
   micRec.onend=()=>{
     clearTimeout(micJanelaTimer);
     clearInterval(countdown);
-    if(micAtivo){
+    // Se continuous=true e não capturou ainda, reinicia automaticamente
+    if(micAtivo&&!jaCapturou){
+      try{ micRec.start(); }catch(e){ micAtivo=false; atualizarBotaoMic(false); }
+    } else if(!jaCapturou){
       micAtivo=false;
       atualizarBotaoMic(false);
-      statusEl.textContent='⏱️ Tempo esgotado — toque 🎤 para falar de novo';
     }
   };
 
