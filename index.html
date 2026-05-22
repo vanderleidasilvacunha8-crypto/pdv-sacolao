@@ -178,6 +178,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .config-item:last-child{border-bottom:none}
 .config-label{font-weight:500;font-size:14px}
 .config-desc{font-size:12px;color:var(--cinza);margin-top:2px}
+
+.pgto-btn-pdv{padding:9px 6px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:rgba(255,255,255,0.8);transition:all 0.2s;text-align:center}
+.pgto-btn-pdv.sel{border-color:var(--amarelo);background:rgba(244,196,48,0.2);color:var(--amarelo);font-weight:700}
+
+#cupom-itens::-webkit-scrollbar{width:4px}
+#cupom-itens::-webkit-scrollbar-track{background:transparent}
+#cupom-itens::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:2px}
 </style>
 </head>
 <body>
@@ -282,76 +289,118 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
     </div>
   </div>
 
-  <div class="pagina" id="pag-vender">
-    <div class="card">
-      <div class="card-titulo">🛒 Vender produto</div>
-      <!-- BUSCA RÁPIDA PDV -->
-      <div style="position:relative;margin-bottom:14px">
-        <div style="display:flex;gap:8px;align-items:center">
-          <div style="position:relative;flex:1">
-            <input type="text" id="busca-venda"
-              placeholder="Digite o produto e a quantidade... (Ex: banana 2)"
-              autocomplete="off"
-              style="width:100%;padding:14px 16px;border-radius:12px;border:2px solid var(--verde-c);background:var(--branco);font-size:15px;outline:none;font-family:'DM Sans',sans-serif;box-shadow:0 2px 12px rgba(82,183,136,0.15)"
-              oninput="autocompletePDV()"
-              onkeydown="teclaPDV(event)">
-            <!-- DROPDOWN AUTOCOMPLETE -->
-            <div id="pdv-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--branco);border-radius:12px;border:1.5px solid var(--borda);box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:50;overflow:hidden;max-height:280px;overflow-y:auto"></div>
-          </div>
-          <button onclick="limparBusca()" style="width:44px;height:50px;border-radius:12px;border:none;background:var(--verde-s);color:var(--verde);font-size:18px;cursor:pointer;flex-shrink:0">✕</button>
-        </div>
-        <div style="font-size:11px;color:var(--cinza);margin-top:6px;text-align:center">
-          ⌨️ Digite o nome → selecione com <b>↑↓</b> → confirme com <b>Enter</b>
-        </div>
-      </div>
-      <!-- CAMPO QUANTIDADE (aparece ao selecionar produto) -->
-      <div id="pdv-qty-area" style="display:none;background:var(--verde-s);border-radius:12px;padding:14px;margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-          <span style="font-size:32px" id="pdv-sel-emoji">🥦</span>
+  <div class="pagina" id="pag-vender" style="padding:0">
+    <!-- LAYOUT PDV: 2 COLUNAS -->
+    <div style="display:flex;height:calc(100vh - 90px);overflow:hidden">
+
+      <!-- COLUNA ESQUERDA: BUSCA -->
+      <div style="flex:1;display:flex;flex-direction:column;padding:14px;overflow-y:auto;border-right:2px solid var(--borda)">
+
+        <!-- HEADER VENDA -->
+        <div style="background:var(--verde);border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div style="font-weight:700;font-size:16px" id="pdv-sel-nome">Produto</div>
-            <div style="font-size:12px;color:var(--cinza)" id="pdv-sel-preco">R$ 0,00 / kg</div>
+            <div style="color:var(--amarelo);font-family:'Fraunces',serif;font-size:16px;font-weight:900">🛒 CAIXA</div>
+            <div style="color:rgba(255,255,255,0.7);font-size:11px" id="pdv-num-venda">Venda em andamento</div>
+          </div>
+          <div style="text-align:right">
+            <div style="color:rgba(255,255,255,0.7);font-size:10px">ITENS</div>
+            <div style="color:var(--amarelo);font-family:'Fraunces',serif;font-size:22px;font-weight:900" id="pdv-qtd-itens">0</div>
           </div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-          <div style="flex:1">
-            <label style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase;display:block;margin-bottom:4px" id="pdv-qty-label">Quantidade</label>
-            <input type="number" id="pdv-qty-input" placeholder="1" min="0.01" step="0.1"
-              style="width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:18px;font-weight:700;text-align:center;outline:none"
-              onkeydown="if(event.key==='Enter'){pdvAddAoCarrinho();}"
-              oninput="pdvAtualizarTotal()">
+
+        <!-- BUSCA AUTOCOMPLETE -->
+        <div style="position:relative;margin-bottom:10px">
+          <input type="text" id="busca-venda"
+            placeholder="🔍 Digite o produto... (↑↓ navegar, Enter confirmar)"
+            autocomplete="off"
+            style="width:100%;padding:14px 16px;border-radius:12px;border:2.5px solid var(--verde-c);background:var(--branco);font-size:15px;outline:none;font-family:'DM Sans',sans-serif;box-shadow:0 2px 16px rgba(82,183,136,0.2)"
+            oninput="autocompletePDV()"
+            onkeydown="teclaPDV(event)">
+          <div id="pdv-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--branco);border-radius:12px;border:1.5px solid var(--borda);box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:50;overflow:hidden;max-height:300px;overflow-y:auto"></div>
+        </div>
+        <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:12px">⌨️ <b>↑↓</b> navegar · <b>Enter</b> selecionar · <b>Esc</b> fechar</div>
+
+        <!-- ÁREA QUANTIDADE -->
+        <div id="pdv-qty-area" style="display:none;background:linear-gradient(135deg,var(--verde),var(--verde-m));border-radius:14px;padding:16px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <span style="font-size:36px;background:rgba(255,255,255,0.15);border-radius:10px;padding:6px 10px" id="pdv-sel-emoji">🥦</span>
+            <div>
+              <div style="font-weight:700;font-size:17px;color:white" id="pdv-sel-nome">Produto</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.7)" id="pdv-sel-preco">R$ 0,00 / kg</div>
+            </div>
           </div>
-          <div style="text-align:center;background:var(--verde);border-radius:10px;padding:10px 14px">
-            <div style="color:rgba(255,255,255,0.7);font-size:10px">Total</div>
-            <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--amarelo)" id="pdv-total-prev">R$ 0,00</div>
+          <div style="display:flex;gap:8px;align-items:stretch;margin-bottom:10px">
+            <div style="flex:1">
+              <div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;margin-bottom:4px" id="pdv-qty-label">Quantidade</div>
+              <input type="number" id="pdv-qty-input" placeholder="1" min="0.01" step="0.1"
+                style="width:100%;padding:14px;border-radius:10px;border:none;font-size:22px;font-weight:900;text-align:center;outline:none;color:var(--verde)"
+                onkeydown="if(event.key==='Enter'){pdvAddAoCarrinho();}"
+                oninput="pdvAtualizarTotal()">
+            </div>
+            <div style="text-align:center;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px 16px;display:flex;flex-direction:column;justify-content:center">
+              <div style="color:rgba(255,255,255,0.6);font-size:10px">TOTAL</div>
+              <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--amarelo)" id="pdv-total-prev">R$ 0,00</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="pdv-atalhos"></div>
+          <div style="display:flex;gap:8px">
+            <button onclick="pdvAddAoCarrinho()" style="flex:2;padding:13px;border-radius:10px;border:none;background:var(--amarelo);color:var(--verde);font-weight:700;font-size:15px;cursor:pointer">✅ Adicionar (Enter)</button>
+            <button onclick="pdvCancelar()" style="flex:1;padding:13px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.3);background:transparent;color:white;font-size:14px;cursor:pointer">Cancelar</button>
           </div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="pdv-atalhos"></div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-laranja" style="flex:2" onclick="pdvAddAoCarrinho()">✅ Adicionar (Enter)</button>
-          <button class="btn btn-outline" style="flex:1" onclick="pdvCancelar()">Cancelar</button>
+
+        <!-- LISTA DE PRODUTOS -->
+        <div style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase;margin-bottom:8px">📦 Produtos</div>
+        <div id="lista-produtos-venda" style="flex:1"></div>
+      </div>
+
+      <!-- COLUNA DIREITA: CUPOM AO VIVO -->
+      <div style="width:340px;flex-shrink:0;display:flex;flex-direction:column;background:var(--verde);overflow:hidden">
+
+        <!-- HEADER CUPOM -->
+        <div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1)">
+          <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:var(--amarelo);text-align:center" id="cupom-loja-nome">🌿 PDV Sacolão</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-top:2px" id="cupom-data-hora"></div>
+        </div>
+
+        <!-- CABEÇALHO TABELA -->
+        <div style="display:grid;grid-template-columns:1fr 52px 72px;gap:4px;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.1)">
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase">PRODUTO</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase;text-align:center">QTD</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase;text-align:right">TOTAL</div>
+        </div>
+
+        <!-- ITENS DO CUPOM (tempo real) -->
+        <div id="cupom-itens" style="flex:1;overflow-y:auto;padding:8px 16px"></div>
+
+        <!-- RODAPÉ CUPOM -->
+        <div style="border-top:1px dashed rgba(255,255,255,0.2);padding:16px">
+          <!-- SUBTOTAL -->
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="color:rgba(255,255,255,0.6);font-size:13px">Subtotal</span>
+            <span style="color:white;font-size:13px;font-weight:600" id="cupom-subtotal">R$ 0,00</span>
+          </div>
+          <!-- TOTAL GRANDE -->
+          <div style="background:var(--amarelo);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <span style="color:var(--verde);font-weight:700;font-size:14px">TOTAL</span>
+            <span style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--verde)" id="cupom-total">R$ 0,00</span>
+          </div>
+          <!-- PAGAMENTO -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+            <button class="pgto-btn-pdv sel" id="pgto-dinheiro" onclick="selPgto('dinheiro')">💵 Dinheiro</button>
+            <button class="pgto-btn-pdv" id="pgto-pix" onclick="selPgto('pix')">📱 Pix</button>
+            <button class="pgto-btn-pdv" id="pgto-cartao" onclick="selPgto('cartao')">💳 Cartão</button>
+            <button class="pgto-btn-pdv" id="pgto-fiado" onclick="selPgto('fiado')">🤝 Fiado</button>
+          </div>
+          <!-- FIADO CLIENTE -->
+          <div id="area-fiado" style="display:none;margin-bottom:10px">
+            <input type="text" id="cliente-fiado" placeholder="Nome do cliente..." style="width:100%;padding:10px;border-radius:8px;border:none;font-size:13px;background:rgba(255,255,255,0.15);color:white;outline:none">
+          </div>
+          <!-- BOTÕES AÇÃO -->
+          <button onclick="finalizarVenda()" style="width:100%;padding:15px;border-radius:12px;border:none;background:var(--laranja);color:white;font-weight:700;font-size:16px;cursor:pointer;margin-bottom:6px">✅ FINALIZAR (F4)</button>
+          <button onclick="limparCarrinho()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer">🗑️ Cancelar venda</button>
         </div>
       </div>
-      <div style="font-size:12px;color:var(--cinza);font-weight:600;margin-bottom:8px;text-transform:uppercase">📦 Produtos disponíveis</div>
-      <div id="lista-produtos-venda"></div>
-    </div>
-    <div class="card" id="card-carrinho" style="display:none">
-      <div class="card-titulo">🛒 Carrinho</div>
-      <div id="lista-carrinho"></div>
-      <div class="total-box"><div><div class="total-label">Total da compra</div></div><div class="total-valor" id="total-venda">R$ 0,00</div></div>
-      <div class="card-titulo" style="margin-top:4px">💳 Pagamento</div>
-      <div class="pgto-grid">
-        <button class="pgto-btn sel" id="pgto-dinheiro" onclick="selPgto('dinheiro')"><span class="icon">💵</span>Dinheiro</button>
-        <button class="pgto-btn" id="pgto-pix" onclick="selPgto('pix')"><span class="icon">📱</span>Pix</button>
-        <button class="pgto-btn" id="pgto-cartao" onclick="selPgto('cartao')"><span class="icon">💳</span>Cartão</button>
-        <button class="pgto-btn" id="pgto-fiado" onclick="selPgto('fiado')"><span class="icon">🤝</span>Fiado</button>
-      </div>
-      <div id="area-fiado" style="display:none;margin-bottom:12px">
-        <label style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase">Nome do cliente</label>
-        <input type="text" id="cliente-fiado" placeholder="Nome do cliente..." style="width:100%;margin-top:5px;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px">
-      </div>
-      <button class="btn btn-laranja" style="margin-bottom:10px;font-size:17px;padding:16px" onclick="finalizarVenda()">✅ FINALIZAR VENDA</button>
-      <button class="btn btn-outline" onclick="limparCarrinho()">🗑️ Limpar carrinho</button>
     </div>
   </div>
 
@@ -652,6 +701,13 @@ function iniciarApp(dados, status){
   ouvirDados();
   renderProdutosVenda();
   atualizarDashboard();
+  // Inicializa cupom
+  const nomeLoja = dados.loja || 'PDV Sacolão';
+  document.getElementById('cupom-loja-nome').textContent = '🌿 '+nomeLoja;
+  document.getElementById('cupom-data-hora').textContent = new Date().toLocaleString('pt-BR');
+  renderCarrinho();
+  // Tecla F4 para finalizar
+  document.addEventListener('keydown', e=>{ if(e.key==='F4'){ e.preventDefault(); finalizarVenda(); } });
 }
 
 // ===================== CADASTRO / LOGIN =====================
@@ -952,21 +1008,50 @@ document.addEventListener('click', e=>{
 // modal qty mantido para compatibilidade mas não usado na venda principal
 
 function renderCarrinho(){
-  const card=document.getElementById('card-carrinho');
-  if(!carrinho.length){ card.style.display='none'; return; }
-  card.style.display='block';
-  document.getElementById('lista-carrinho').innerHTML=carrinho.map((c,i)=>`<div class="carr-item"><span style="font-size:22px">${c.emoji}</span><div class="carr-nome"><div>${c.nome}</div><div>${c.descQty||c.qty+' '+c.unidade}</div></div><div style="display:flex;gap:6px"><button class="btn-icon danger" onclick="removerItem(${i})">🗑️</button></div><div class="carr-total">${fmt(c.preco*c.qty)}</div></div>`).join('');
   const total=carrinho.reduce((s,c)=>s+c.preco*c.qty,0);
-  document.getElementById('total-venda').textContent=fmt(total);
+  // Atualiza contador de itens
+  document.getElementById('pdv-qtd-itens').textContent = carrinho.length;
+  // Atualiza cupom ao vivo
+  const cupomItens = document.getElementById('cupom-itens');
+  if(!carrinho.length){
+    cupomItens.innerHTML='<div style="text-align:center;padding:40px 16px;color:rgba(255,255,255,0.3)"><div style="font-size:36px;margin-bottom:8px">🛒</div><div style="font-size:13px">Nenhum item adicionado</div></div>';
+    document.getElementById('cupom-subtotal').textContent='R$ 0,00';
+    document.getElementById('cupom-total').textContent='R$ 0,00';
+    return;
+  }
+  cupomItens.innerHTML = carrinho.map((c,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 52px 72px;gap:4px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07);align-items:center">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:white">${c.emoji} ${c.nome}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.45)">${fmt(c.preco)}/${c.unidade}</div>
+      </div>
+      <div style="text-align:center;font-size:12px;color:rgba(255,255,255,0.6)">${c.descQty||c.qty+' '+c.unidade}</div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
+        <span style="font-family:'Fraunces',serif;font-weight:700;color:var(--amarelo);font-size:13px">${fmt(c.preco*c.qty)}</span>
+        <button onclick="removerItem(${i})" style="width:18px;height:18px;border-radius:4px;border:none;background:rgba(231,111,81,0.3);color:var(--laranja);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">×</button>
+      </div>
+    </div>`).join('');
+  // Scroll para o último item
+  cupomItens.scrollTop = cupomItens.scrollHeight;
+  document.getElementById('cupom-subtotal').textContent=fmt(total);
+  document.getElementById('cupom-total').textContent=fmt(total);
+  // Atualiza hora
+  document.getElementById('cupom-data-hora').textContent = new Date().toLocaleString('pt-BR');
 }
 
 function removerItem(i){ carrinho.splice(i,1); renderCarrinho(); }
-function limparCarrinho(){ carrinho=[]; document.getElementById('busca-venda').value=''; renderCarrinho(); renderProdutosVenda(); }
+function limparCarrinho(){
+  carrinho=[];
+  document.getElementById('busca-venda').value='';
+  renderCarrinho();
+  renderProdutosVenda();
+}
 
 function selPgto(tipo){
   metodoPgto=tipo;
-  document.querySelectorAll('.pgto-btn').forEach(b=>b.classList.remove('sel'));
-  document.getElementById('pgto-'+tipo).classList.add('sel');
+  document.querySelectorAll('.pgto-btn-pdv').forEach(b=>b.classList.remove('sel'));
+  const el=document.getElementById('pgto-'+tipo);
+  if(el) el.classList.add('sel');
   document.getElementById('area-fiado').style.display=tipo==='fiado'?'block':'none';
 }
 
