@@ -290,11 +290,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
   </div>
 
   <div class="pagina" id="pag-vender" style="padding:0">
-    <!-- LAYOUT PDV: 2 COLUNAS -->
+    <!-- LAYOUT PDV: 50% / 50% -->
     <div style="display:flex;height:calc(100vh - 90px);overflow:hidden">
 
-      <!-- COLUNA ESQUERDA: BUSCA -->
-      <div style="flex:1;display:flex;flex-direction:column;padding:14px;overflow-y:auto;border-right:2px solid var(--borda)">
+      <!-- COLUNA ESQUERDA 50%: BUSCA -->
+      <div style="flex:1;display:flex;flex-direction:column;padding:14px;overflow-y:auto;border-right:3px solid #c0392b;background:var(--creme)">
 
         <!-- HEADER VENDA -->
         <div style="background:var(--verde);border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
@@ -315,10 +315,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
             autocomplete="off"
             style="width:100%;padding:14px 16px;border-radius:12px;border:2.5px solid var(--verde-c);background:var(--branco);font-size:15px;outline:none;font-family:'DM Sans',sans-serif;box-shadow:0 2px 16px rgba(82,183,136,0.2)"
             oninput="autocompletePDV()"
-            onkeydown="teclaPDV(event)">
+            onkeydown="teclaBusca(event)">
           <div id="pdv-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--branco);border-radius:12px;border:1.5px solid var(--borda);box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:50;overflow:hidden;max-height:300px;overflow-y:auto"></div>
         </div>
-        <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:12px">⌨️ <b>↑↓</b> navegar · <b>Enter</b> selecionar · <b>Esc</b> fechar</div>
+        <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:12px">⌨️ <b>↑↓</b> navegar · <b>Enter</b> selecionar · campo vazio + <b>Enter</b> = finalizar venda</div>
 
         <!-- ÁREA QUANTIDADE -->
         <div id="pdv-qty-area" style="display:none;background:linear-gradient(135deg,var(--verde),var(--verde-m));border-radius:14px;padding:16px;margin-bottom:12px">
@@ -350,40 +350,41 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
         </div>
 
         <!-- LISTA DE PRODUTOS -->
-        <div style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase;margin-bottom:8px">📦 Produtos</div>
+        <div style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase;margin-bottom:8px">📦 Produtos disponíveis</div>
         <div id="lista-produtos-venda" style="flex:1"></div>
       </div>
 
-      <!-- COLUNA DIREITA: CUPOM AO VIVO -->
-      <div style="width:340px;flex-shrink:0;display:flex;flex-direction:column;background:var(--verde);overflow:hidden">
+      <!-- COLUNA DIREITA 50%: CUPOM VERMELHO AO VIVO -->
+      <div style="flex:1;display:flex;flex-direction:column;background:#c0392b;overflow:hidden">
 
         <!-- HEADER CUPOM -->
-        <div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1)">
-          <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:var(--amarelo);text-align:center" id="cupom-loja-nome">🌿 PDV Sacolão</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-top:2px" id="cupom-data-hora"></div>
+        <div style="padding:16px 20px;background:#a93226;border-bottom:1px solid rgba(0,0,0,0.2)">
+          <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:#fff;text-align:center" id="cupom-loja-nome">🌿 PDV Sacolão</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;margin-top:2px" id="cupom-data-hora"></div>
         </div>
 
         <!-- CABEÇALHO TABELA -->
-        <div style="display:grid;grid-template-columns:1fr 52px 72px;gap:4px;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.1)">
-          <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase">PRODUTO</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase;text-align:center">QTD</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase;text-align:right">TOTAL</div>
+        <div style="display:grid;grid-template-columns:1fr 80px 90px 28px;gap:4px;padding:8px 20px;background:#a93226;border-bottom:1px solid rgba(0,0,0,0.15)">
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;text-transform:uppercase">PRODUTO</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;text-transform:uppercase;text-align:center">QTD</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;text-transform:uppercase;text-align:right">TOTAL</div>
+          <div></div>
         </div>
 
         <!-- ITENS DO CUPOM (tempo real) -->
-        <div id="cupom-itens" style="flex:1;overflow-y:auto;padding:8px 16px"></div>
+        <div id="cupom-itens" style="flex:1;overflow-y:auto;padding:6px 20px"></div>
 
         <!-- RODAPÉ CUPOM -->
-        <div style="border-top:1px dashed rgba(255,255,255,0.2);padding:16px">
+        <div style="background:#a93226;border-top:2px dashed rgba(255,255,255,0.25);padding:16px 20px">
           <!-- SUBTOTAL -->
           <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-            <span style="color:rgba(255,255,255,0.6);font-size:13px">Subtotal</span>
+            <span style="color:rgba(255,255,255,0.7);font-size:13px">Subtotal</span>
             <span style="color:white;font-size:13px;font-weight:600" id="cupom-subtotal">R$ 0,00</span>
           </div>
           <!-- TOTAL GRANDE -->
-          <div style="background:var(--amarelo);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <span style="color:var(--verde);font-weight:700;font-size:14px">TOTAL</span>
-            <span style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--verde)" id="cupom-total">R$ 0,00</span>
+          <div style="background:white;border-radius:14px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
+            <span style="color:#c0392b;font-weight:700;font-size:16px">💰 TOTAL</span>
+            <span style="font-family:'Fraunces',serif;font-size:32px;font-weight:900;color:#c0392b" id="cupom-total">R$ 0,00</span>
           </div>
           <!-- PAGAMENTO -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
@@ -394,11 +395,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
           </div>
           <!-- FIADO CLIENTE -->
           <div id="area-fiado" style="display:none;margin-bottom:10px">
-            <input type="text" id="cliente-fiado" placeholder="Nome do cliente..." style="width:100%;padding:10px;border-radius:8px;border:none;font-size:13px;background:rgba(255,255,255,0.15);color:white;outline:none">
+            <input type="text" id="cliente-fiado" placeholder="Nome do cliente..." style="width:100%;padding:10px;border-radius:8px;border:none;font-size:13px;background:rgba(255,255,255,0.2);color:white;outline:none;placeholder-color:rgba(255,255,255,0.5)">
           </div>
           <!-- BOTÕES AÇÃO -->
-          <button onclick="finalizarVenda()" style="width:100%;padding:15px;border-radius:12px;border:none;background:var(--laranja);color:white;font-weight:700;font-size:16px;cursor:pointer;margin-bottom:6px">✅ FINALIZAR (F4)</button>
-          <button onclick="limparCarrinho()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer">🗑️ Cancelar venda</button>
+          <div style="display:flex;gap:8px">
+            <button onclick="finalizarVenda()" style="flex:2;padding:15px;border-radius:12px;border:none;background:#27ae60;color:white;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2)">✅ FINALIZAR (F4)</button>
+            <button onclick="limparCarrinho()" style="flex:1;padding:15px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.7);font-size:13px;cursor:pointer">🗑️ Cancelar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -984,8 +987,36 @@ function pdvAddAoCarrinho(){
   renderCarrinho();
   toast(pdvProdSel.emoji+' '+pdvProdSel.nome+' — '+descQty+' → '+fmt(pdvProdSel.preco*qty),1800);
   pdvCancelar();
-  // Foca de volta na busca para continuar adicionando
-  setTimeout(()=>document.getElementById('busca-venda').focus(), 100);
+  // Foca de volta na busca — aguarda 2º Enter para finalizar
+  pdvAguardandoFinalizacao = true;
+  setTimeout(()=>{
+    document.getElementById('busca-venda').focus();
+    // Mostra dica no campo
+    document.getElementById('busca-venda').placeholder = '✅ Enter para finalizar venda · ou continue digitando...';
+    setTimeout(()=>{
+      document.getElementById('busca-venda').placeholder = '🔍 Digite o produto... (↑↓ navegar, Enter confirmar)';
+      pdvAguardandoFinalizacao = false;
+    }, 4000);
+  }, 100);
+}
+
+let pdvAguardandoFinalizacao = false;
+
+function teclaBusca(e){
+  // Enter com campo vazio → finaliza se tiver itens no carrinho
+  if(e.key === 'Enter'){
+    const val = (document.getElementById('busca-venda').value||'').trim();
+    const dd = document.getElementById('pdv-dropdown');
+    if(val === '' && dd.style.display === 'none' && carrinho.length > 0){
+      e.preventDefault();
+      // Destaca o painel direito brevemente
+      const painel = document.getElementById('cupom-itens').closest('div[style*="background:#c0392b"]') ||
+                     document.querySelector('.pagina.ativa > div > div:last-child');
+      finalizarVenda();
+      return;
+    }
+  }
+  teclaPDV(e);
 }
 
 function pdvCancelar(){
@@ -1019,18 +1050,28 @@ function renderCarrinho(){
     document.getElementById('cupom-total').textContent='R$ 0,00';
     return;
   }
-  cupomItens.innerHTML = carrinho.map((c,i)=>`
-    <div style="display:grid;grid-template-columns:1fr 52px 72px;gap:4px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07);align-items:center">
+  cupomItens.innerHTML = carrinho.map((c,i)=>{
+    const isPeso = ['kg','litro'].includes(c.unidade);
+    const precoPor = isPeso
+      ? `${fmt(c.preco)}/kg`
+      : `${fmt(c.preco)}/unid`;
+    return `
+    <div style="display:grid;grid-template-columns:1fr 80px 90px 28px;gap:4px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.1);align-items:start">
       <div>
-        <div style="font-size:13px;font-weight:600;color:white">${c.emoji} ${c.nome}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.45)">${fmt(c.preco)}/${c.unidade}</div>
+        <div style="font-size:14px;font-weight:700;color:white">${c.emoji} ${c.nome}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px">💲 ${precoPor}</div>
       </div>
-      <div style="text-align:center;font-size:12px;color:rgba(255,255,255,0.6)">${c.descQty||c.qty+' '+c.unidade}</div>
-      <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
-        <span style="font-family:'Fraunces',serif;font-weight:700;color:var(--amarelo);font-size:13px">${fmt(c.preco*c.qty)}</span>
-        <button onclick="removerItem(${i})" style="width:18px;height:18px;border-radius:4px;border:none;background:rgba(231,111,81,0.3);color:var(--laranja);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">×</button>
+      <div style="text-align:center;padding-top:2px">
+        <div style="font-size:13px;color:rgba(255,255,255,0.8);font-weight:600">${c.descQty||c.qty+' '+c.unidade}</div>
       </div>
-    </div>`).join('');
+      <div style="text-align:right;padding-top:2px">
+        <div style="font-family:'Fraunces',serif;font-weight:700;color:#f9ca24;font-size:15px">${fmt(c.preco*c.qty)}</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;padding-top:2px">
+        <button onclick="removerItem(${i})" style="width:22px;height:22px;border-radius:6px;border:none;background:rgba(255,255,255,0.15);color:white;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+      </div>
+    </div>`;
+  }).join('');
   // Scroll para o último item
   cupomItens.scrollTop = cupomItens.scrollHeight;
   document.getElementById('cupom-subtotal').textContent=fmt(total);
