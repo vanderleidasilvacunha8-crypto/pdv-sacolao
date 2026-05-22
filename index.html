@@ -318,7 +318,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
             onkeydown="teclaBusca(event)">
           <div id="pdv-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--branco);border-radius:12px;border:1.5px solid var(--borda);box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:50;overflow:hidden;max-height:300px;overflow-y:auto"></div>
         </div>
-        <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:12px">⌨️ <b>↑↓</b> navegar · <b>Enter</b> selecionar · campo vazio + <b>Enter</b> = finalizar venda</div>
+        <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:12px">⌨️ <b>↑↓←→</b> pagamento · <b>Enter</b> confirmar · campo vazio + <b>Enter</b> = finalizar · <b>F4</b> finalizar</div>
 
         <!-- ÁREA QUANTIDADE -->
         <div id="pdv-qty-area" style="display:none;background:linear-gradient(135deg,var(--verde),var(--verde-m));border-radius:14px;padding:16px;margin-bottom:12px">
@@ -372,7 +372,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
         </div>
 
         <!-- ITENS DO CUPOM (tempo real) -->
-        <div id="cupom-itens" style="flex:1;overflow-y:auto;padding:6px 20px"></div>
+        <div id="cupom-itens" style="flex:1;overflow-y:auto;padding:10px 12px"></div>
 
         <!-- RODAPÉ CUPOM -->
         <div style="background:#a93226;border-top:2px dashed rgba(255,255,255,0.25);padding:16px 20px">
@@ -711,7 +711,10 @@ function iniciarApp(dados, status){
   document.getElementById('cupom-data-hora').textContent = new Date().toLocaleString('pt-BR');
   renderCarrinho();
   // Tecla F4 para finalizar
-  document.addEventListener('keydown', e=>{ if(e.key==='F4'){ e.preventDefault(); finalizarVenda(); } });
+  document.addEventListener('keydown', e=>{
+    if(e.key==='F4'){ e.preventDefault(); finalizarVenda(); }
+    navegarPgto(e);
+  });
 }
 
 // ===================== CADASTRO / LOGIN =====================
@@ -1058,21 +1061,17 @@ function renderCarrinho(){
     const isPeso = ['kg','litro'].includes(c.unidade);
     const precoPor = isPeso ? `${fmt(c.preco)}/kg` : `${fmt(c.preco)}/unid`;
     return `
-    <div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.12)">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div style="flex:1">
-          <div style="font-size:17px;font-weight:800;color:#ffffff;letter-spacing:0.3px;line-height:1.2">${c.emoji} ${c.nome}</div>
-          <div style="display:flex;gap:10px;margin-top:4px;align-items:center;flex-wrap:wrap">
-            <span style="font-size:12px;background:rgba(244,196,48,0.25);color:#f9ca24;border-radius:5px;padding:2px 7px;font-weight:600">💲 ${precoPor}</span>
-            <span style="font-size:12px;color:rgba(255,255,255,0.65)">${c.descQty||c.qty+' '+c.unidade}</span>
-          </div>
+    <div style="background:white;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;box-shadow:0 2px 6px rgba(0,0,0,0.15)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:18px;font-weight:800;color:#1a3a2a;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.emoji} ${c.nome}</div>
+        <div style="display:flex;gap:8px;margin-top:5px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:12px;background:#fff3cd;color:#856404;border-radius:5px;padding:2px 8px;font-weight:700">💲 ${precoPor}</span>
+          <span style="font-size:13px;color:#555;font-weight:600">${c.descQty||c.qty+' '+c.unidade}</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-          <div style="text-align:right">
-            <div style="font-family:'Fraunces',serif;font-weight:900;color:#f9ca24;font-size:20px;line-height:1">${fmt(c.preco*c.qty)}</div>
-          </div>
-          <button onclick="removerItem(${i})" style="width:24px;height:24px;border-radius:6px;border:none;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
-        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <div style="font-family:'Fraunces',serif;font-weight:900;color:#c0392b;font-size:22px;line-height:1">${fmt(c.preco*c.qty)}</div>
+        <button onclick="removerItem(${i})" style="width:26px;height:26px;border-radius:6px;border:none;background:#fdecea;color:#c0392b;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700">×</button>
       </div>
     </div>`;
   }).join('');
@@ -1092,12 +1091,45 @@ function limparCarrinho(){
   renderProdutosVenda();
 }
 
+// Ordem e mapeamento dos métodos de pagamento
+const PGTOS = ['dinheiro','pix','cartao','fiado'];
+// Layout em grade 2x2:
+// [dinheiro] [pix]
+// [cartao]   [fiado]
+const PGTO_GRID = {
+  dinheiro: {right:'pix',   down:'cartao', up:null,      left:null},
+  pix:      {right:null,    down:'fiado',  up:null,      left:'dinheiro'},
+  cartao:   {right:'fiado', down:null,     up:'dinheiro',left:null},
+  fiado:    {right:null,    down:null,     up:'pix',     left:'cartao'},
+};
+
 function selPgto(tipo){
   metodoPgto=tipo;
   document.querySelectorAll('.pgto-btn-pdv').forEach(b=>b.classList.remove('sel'));
   const el=document.getElementById('pgto-'+tipo);
   if(el) el.classList.add('sel');
   document.getElementById('area-fiado').style.display=tipo==='fiado'?'block':'none';
+}
+
+// Navegação por teclado nos botões de pagamento
+// Chamada do listener global abaixo
+function navegarPgto(e){
+  // Só age quando o foco está na área de venda e não há produto selecionado
+  if(pdvProdSel) return;
+  const busca = document.getElementById('busca-venda');
+  const buscaVal = (busca?.value||'').trim();
+  const dd = document.getElementById('pdv-dropdown');
+  const ddAberto = dd?.style.display !== 'none';
+  // Só ativa se campo de busca estiver vazio e dropdown fechado
+  if(buscaVal !== '' || ddAberto) return;
+  const nav = PGTO_GRID[metodoPgto];
+  if(!nav) return;
+  let prox = null;
+  if(e.key==='ArrowRight') prox = nav.right;
+  else if(e.key==='ArrowLeft') prox = nav.left;
+  else if(e.key==='ArrowDown') prox = nav.down;
+  else if(e.key==='ArrowUp') prox = nav.up;
+  if(prox){ e.preventDefault(); selPgto(prox); toast('💳 '+prox.charAt(0).toUpperCase()+prox.slice(1),800); }
 }
 
 async function finalizarVenda(){
