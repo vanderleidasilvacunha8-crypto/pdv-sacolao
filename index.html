@@ -30,11 +30,9 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto);min-height:100vh}
 
-/* ===== TELAS ===== */
 .tela{display:none;min-height:100vh}
 .tela.ativa{display:block}
 
-/* ===== LOGIN / CADASTRO ===== */
 .auth-bg{
   min-height:100vh;
   background: linear-gradient(160deg, #1a3a2a 0%, #2d6a4f 50%, #1a3a2a 100%);
@@ -47,7 +45,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .auth-titulo{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--verde);margin-bottom:20px}
 .trial-badge{background:var(--amarelo);color:var(--verde);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;display:inline-block;margin-bottom:16px}
 
-/* ===== INPUTS ===== */
 .campo{margin-bottom:14px}
 .campo label{font-size:11px;font-weight:600;color:var(--cinza);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:5px}
 .campo input,.campo select{
@@ -58,7 +55,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 }
 .campo input:focus,.campo select:focus{border-color:var(--verde-c);background:var(--branco)}
 
-/* ===== BOTÕES ===== */
 .btn{width:100%;padding:14px;border-radius:12px;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn:active{transform:scale(0.98)}
 .btn-verde{background:var(--verde);color:var(--branco)}
@@ -68,7 +64,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .btn-sm{padding:8px 14px;font-size:13px;border-radius:10px;width:auto}
 .btn-link{background:none;border:none;color:var(--verde-m);font-size:13px;cursor:pointer;text-decoration:underline;width:auto;padding:4px}
 
-/* ===== HEADER APP ===== */
 .app-header{
   background:var(--verde);padding:14px 18px 10px;
   position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.2)
@@ -84,23 +79,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .tab-btn{flex-shrink:0;padding:6px 12px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.7);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s}
 .tab-btn.ativo{background:var(--amarelo);color:var(--verde);border-color:var(--amarelo);font-weight:700}
 
-/* ===== PÁGINAS ===== */
 .pagina{display:none;padding:16px;animation:fadeIn 0.2s ease}
 .pagina.ativa{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
-/* ===== CARDS ===== */
 .card{background:var(--branco);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:var(--sombra);border:1px solid var(--borda)}
 .card-titulo{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--verde);margin-bottom:14px;display:flex;align-items:center;gap:8px}
 
-/* ===== STATS ===== */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .stat-card{background:var(--branco);border-radius:14px;padding:16px;border:1px solid var(--borda);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 .stat-icon{font-size:24px;margin-bottom:6px}
 .stat-valor{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--verde)}
 .stat-label{font-size:11px;color:var(--cinza);font-weight:500;margin-top:2px}
 
-/* ===== PRODUTO VENDA ===== */
 .pv-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;background:var(--verde-s);margin-bottom:8px;cursor:pointer;transition:all 0.15s}
 .pv-item:active{transform:scale(0.98)}
 .pv-esq{display:flex;align-items:center;gap:10px}
@@ -108,7 +99,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .pv-preco{font-size:12px;color:var(--cinza)}
 .pv-add{background:var(--verde);color:white;border:none;border-radius:8px;width:30px;height:30px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
-/* ===== CARRINHO ===== */
 .carr-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--borda)}
 .carr-item:last-child{border-bottom:none}
 .carr-nome{flex:1}
@@ -119,13 +109,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .total-label{color:rgba(255,255,255,0.8);font-size:13px}
 .total-valor{font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--amarelo)}
 
-/* ===== PAGAMENTO ===== */
 .pgto-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .pgto-btn{padding:12px;border-radius:12px;border:2px solid var(--borda);background:var(--creme);cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;transition:all 0.2s}
 .pgto-btn .icon{font-size:20px;display:block;margin-bottom:4px}
 .pgto-btn.sel{border-color:var(--verde);background:var(--verde-s);color:var(--verde);font-weight:700}
 
-/* ===== PRODUTO LISTA ===== */
 .prod-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--borda)}
 .prod-item:last-child{border-bottom:none}
 .prod-emoji{font-size:28px;width:42px;text-align:center;flex-shrink:0}
@@ -138,7 +126,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .btn-icon{width:32px;height:32px;border-radius:8px;border:none;background:var(--verde-s);color:var(--verde);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
 .btn-icon.danger{background:#fdecea;color:var(--laranja)}
 
-/* ===== FIADO ===== */
 .fiado-item{padding:14px 0;border-bottom:1px solid var(--borda)}
 .fiado-item:last-child{border-bottom:none}
 .fiado-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -146,14 +133,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .fiado-divida{font-family:'Fraunces',serif;font-weight:700;color:var(--laranja);font-size:16px}
 .fiado-acoes{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 
-/* ===== CUPOM ===== */
 .cupom{background:var(--branco);border:2px dashed var(--borda);border-radius:16px;padding:20px;font-family:'DM Sans',sans-serif}
 .cupom-loja{font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--verde);text-align:center}
 .cupom-linha{border-top:1px dashed var(--borda);margin:12px 0}
 .cupom-item{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
 .cupom-total{display:flex;justify-content:space-between;font-weight:700;font-size:16px;margin-top:4px}
 
-/* ===== ADMIN ===== */
 .admin-header{background:linear-gradient(135deg,#1a3a2a,#2d6a4f);padding:20px;color:white}
 .admin-titulo{font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--amarelo)}
 .admin-sub{font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px}
@@ -169,31 +154,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 .cliente-info{font-size:12px;color:var(--cinza);margin-bottom:10px}
 .cliente-acoes{display:flex;gap:8px;flex-wrap:wrap}
 
-/* ===== MODAL ===== */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end}
 .modal-overlay.show{display:flex}
 .modal{background:var(--branco);border-radius:24px 24px 0 0;padding:24px;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-titulo{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--verde);margin-bottom:16px}
 
-/* ===== BLOQUEIO ===== */
-.bloqueio-tela{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-height(135deg,#1a3a2a,#2d6a4f);padding:32px;text-align:center;background:var(--verde)}
+.bloqueio-tela{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--verde);padding:32px;text-align:center}
 .bloqueio-icon{font-size:64px;margin-bottom:16px}
 .bloqueio-titulo{font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--amarelo);margin-bottom:12px}
 .bloqueio-msg{color:rgba(255,255,255,0.8);font-size:15px;line-height:1.6;margin-bottom:24px}
 
-/* ===== TOAST ===== */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--verde);color:white;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:999;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
 .empty-state{text-align:center;padding:40px 20px;color:var(--cinza)}
 .empty-state .emoji{font-size:48px;margin-bottom:10px}
 
-/* ===== QTY ===== */
 .qty-btn{width:28px;height:28px;border-radius:8px;border:none;background:var(--verde-s);color:var(--verde);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
 .qty-num{font-weight:700;font-size:15px;min-width:24px;text-align:center}
 
-/* ===== CONFIG ===== */
 .config-item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--borda)}
 .config-item:last-child{border-bottom:none}
 .config-label{font-weight:500;font-size:14px}
@@ -202,47 +182,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 </head>
 <body>
 
-<!-- ============ TELA: SETUP FIREBASE ============ -->
-<div class="tela ativa" id="tela-setup">
-  <div class="auth-bg">
-    <div class="auth-logo">🌿 PDV<span>Sacolão</span></div>
-    <div class="auth-sub">Sistema de gestão para sacolões e mercearias</div>
-    <div class="auth-card">
-      <div class="auth-titulo">⚙️ Configurar Firebase</div>
-      <p style="font-size:13px;color:var(--cinza);margin-bottom:16px;line-height:1.6">
-        Cole aqui as configurações do seu projeto Firebase. Faça isso só uma vez!
-      </p>
-      <div class="campo">
-        <label>API Key</label>
-        <input type="text" id="cfg-apikey" placeholder="AIzaSy...">
-      </div>
-      <div class="campo">
-        <label>Auth Domain</label>
-        <input type="text" id="cfg-authdomain" placeholder="meu-projeto.firebaseapp.com">
-      </div>
-      <div class="campo">
-        <label>Database URL</label>
-        <input type="text" id="cfg-dburl" placeholder="https://meu-projeto-default-rtdb.firebaseio.com">
-      </div>
-      <div class="campo">
-        <label>Project ID</label>
-        <input type="text" id="cfg-projectid" placeholder="meu-projeto">
-      </div>
-      <button class="btn btn-verde" onclick="salvarConfig()" style="margin-bottom:12px">💾 Salvar e conectar</button>
-      <div style="background:var(--verde-s);border-radius:10px;padding:12px;font-size:12px;color:var(--cinza);line-height:1.7">
-        <b>Como pegar esses dados:</b><br>
-        1. Acesse <b>console.firebase.google.com</b><br>
-        2. Crie um projeto novo chamado <b>pdv-sacolao</b><br>
-        3. Clique em ⚙️ Configurações do projeto<br>
-        4. Em "Seus apps", clique em &lt;/&gt; (Web)<br>
-        5. Copie os dados do <b>firebaseConfig</b>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ============ TELA: LOGIN ============ -->
-<div class="tela" id="tela-login">
+<div class="tela ativa" id="tela-login">
   <div class="auth-bg">
     <div class="auth-logo">🌿 PDV<span>Sacolão</span></div>
     <div class="auth-sub">Gestão inteligente para seu negócio</div>
@@ -264,45 +205,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
       </div>
     </div>
 
-    <!-- CADASTRO -->
     <div class="auth-card" id="card-cadastro" style="display:none">
       <div class="trial-badge">🎁 7 dias grátis — sem cartão</div>
       <div class="auth-titulo">Criar conta</div>
-      <div class="campo">
-        <label>Nome do seu negócio</label>
-        <input type="text" id="cad-loja" placeholder="Ex: Sacolão do João">
-      </div>
-      <div class="campo">
-        <label>Seu nome</label>
-        <input type="text" id="cad-nome" placeholder="Seu nome completo">
-      </div>
-      <div class="campo">
-        <label>WhatsApp</label>
-        <input type="tel" id="cad-tel" placeholder="(31) 99999-9999">
-      </div>
-      <div class="campo">
-        <label>E-mail</label>
-        <input type="email" id="cad-email" placeholder="seu@email.com">
-      </div>
-      <div class="campo">
-        <label>Senha (mínimo 6 dígitos)</label>
-        <input type="password" id="cad-senha" placeholder="••••••••">
-      </div>
+      <div class="campo"><label>Nome do seu negócio</label><input type="text" id="cad-loja" placeholder="Ex: Sacolão do João"></div>
+      <div class="campo"><label>Seu nome</label><input type="text" id="cad-nome" placeholder="Seu nome completo"></div>
+      <div class="campo"><label>WhatsApp</label><input type="tel" id="cad-tel" placeholder="(31) 99999-9999"></div>
+      <div class="campo"><label>E-mail</label><input type="email" id="cad-email" placeholder="seu@email.com"></div>
+      <div class="campo"><label>Senha (mínimo 6 dígitos)</label><input type="password" id="cad-senha" placeholder="••••••••"></div>
       <button class="btn btn-laranja" onclick="criarConta()" style="margin-bottom:10px">✅ Criar conta e começar</button>
       <button class="btn btn-outline" onclick="mostrarLogin()">← Já tenho conta</button>
     </div>
 
-    <!-- LOGIN ADMIN -->
     <div class="auth-card" id="card-admin-login" style="display:none">
       <div class="auth-titulo">👤 Painel Admin</div>
-      <div class="campo">
-        <label>E-mail admin</label>
-        <input type="email" id="adm-email" placeholder="admin@pdvsacolao.com">
-      </div>
-      <div class="campo">
-        <label>Senha</label>
-        <input type="password" id="adm-senha" placeholder="••••••••">
-      </div>
+      <div class="campo"><label>E-mail admin</label><input type="email" id="adm-email" placeholder="admin@pdvsacolao.com"></div>
+      <div class="campo"><label>Senha</label><input type="password" id="adm-senha" placeholder="••••••••"></div>
       <button class="btn btn-verde" onclick="loginAdmin()" style="margin-bottom:10px">🔑 Entrar como Admin</button>
       <button class="btn btn-outline" onclick="mostrarLogin()">← Voltar</button>
     </div>
@@ -342,7 +260,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
     </div>
   </div>
 
-  <!-- INÍCIO -->
   <div class="pagina ativa" id="pag-inicio">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-valor" id="st-hoje">R$ 0</div><div class="stat-label">Vendas hoje</div></div>
@@ -365,7 +282,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
     </div>
   </div>
 
-  <!-- VENDER -->
   <div class="pagina" id="pag-vender">
     <div class="card">
       <div class="card-titulo">🛒 Vender produto</div>
@@ -401,7 +317,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
     </div>
   </div>
 
-  <!-- PRODUTOS -->
   <div class="pagina" id="pag-produtos">
     <div class="card">
       <div class="card-titulo">➕ Cadastrar produto</div>
@@ -434,7 +349,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
     </div>
   </div>
 
-  <!-- FIADO -->
   <div class="pagina" id="pag-fiado">
     <div class="card">
       <div class="card-titulo">💰 Total em fiado</div>
@@ -454,7 +368,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
     <div class="card"><div class="card-titulo">🤝 Clientes</div><div id="lista-fiado"></div></div>
   </div>
 
-  <!-- RELATÓRIOS -->
   <div class="pagina" id="pag-relatorios">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-valor" id="rel-hoje">R$ 0</div><div class="stat-label">Hoje</div></div>
@@ -470,22 +383,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
     </div>
   </div>
 
-  <!-- CONFIG -->
   <div class="pagina" id="pag-config">
     <div class="card">
       <div class="card-titulo">⚙️ Minha conta</div>
-      <div class="config-item">
-        <div><div class="config-label">Loja</div><div class="config-desc" id="cfg-loja-nome">—</div></div>
-      </div>
-      <div class="config-item">
-        <div><div class="config-label">E-mail</div><div class="config-desc" id="cfg-email">—</div></div>
-      </div>
-      <div class="config-item">
-        <div><div class="config-label">Status</div><div class="config-desc" id="cfg-status">—</div></div>
-      </div>
-      <div class="config-item">
-        <div><div class="config-label">Trial / Vencimento</div><div class="config-desc" id="cfg-vencimento">—</div></div>
-      </div>
+      <div class="config-item"><div><div class="config-label">Loja</div><div class="config-desc" id="cfg-loja-nome">—</div></div></div>
+      <div class="config-item"><div><div class="config-label">E-mail</div><div class="config-desc" id="cfg-email">—</div></div></div>
+      <div class="config-item"><div><div class="config-label">Status</div><div class="config-desc" id="cfg-status">—</div></div></div>
+      <div class="config-item"><div><div class="config-label">Trial / Vencimento</div><div class="config-desc" id="cfg-vencimento">—</div></div></div>
     </div>
     <div class="card">
       <div class="card-titulo">💳 Assinar / Renovar</div>
@@ -607,15 +511,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 <div class="toast" id="toast"></div>
 
 <script>
-// ===================== CONFIG FIREBASE =====================
-const CFG_KEY = 'pdvsacolao_firebase_config';
-let firebaseApp, auth, db;
+// ===================== FIREBASE CONFIG (FIXO) =====================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCscd8Lokm6uo3cpcOLXbj0RI2ETcQSMRY",
+  authDomain: "pdv-sacolao.firebaseapp.com",
+  databaseURL: "https://pdv-sacolao-default-rtdb.firebaseio.com",
+  projectId: "pdv-sacolao",
+  storageBucket: "pdv-sacolao.firebasestorage.app",
+  messagingSenderId: "14556611434",
+  appId: "1:14556611434:web:b387429ab955323f889b13"
+};
+
+let auth, db;
 let usuarioAtual = null;
 let dadosUsuario = null;
 let carrinho = [];
 let metodoPgto = 'dinheiro';
 let ultimaVenda = null;
-let _vozItens = [];
+let _vozItensLocal = [];
 let mqId = null, mqModo = 'unid', mqQty = 1;
 
 // ===================== UTILS =====================
@@ -638,39 +551,15 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
   el.addEventListener('click',e=>{ if(e.target===el) fecharModal(); });
 });
 
-// ===================== RELÓGIO =====================
-function tick(){
-  const a=new Date();
-  // Atualiza relógio se existir
-}
-setInterval(tick,1000);
-
-// ===================== FIREBASE SETUP =====================
-function salvarConfig(){
-  const cfg = {
-    apiKey: document.getElementById('cfg-apikey').value.trim(),
-    authDomain: document.getElementById('cfg-authdomain').value.trim(),
-    databaseURL: document.getElementById('cfg-dburl').value.trim(),
-    projectId: document.getElementById('cfg-projectid').value.trim(),
-  };
-  if(!cfg.apiKey||!cfg.authDomain||!cfg.databaseURL||!cfg.projectId){
-    toast('⚠️ Preencha todos os campos'); return;
-  }
-  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
-  iniciarFirebase(cfg);
-}
-
-function iniciarFirebase(cfg){
-  try{
-    if(firebase.apps.length) firebase.apps.forEach(a=>a.delete());
-    firebaseApp = firebase.initializeApp(cfg);
+// ===================== INIT FIREBASE =====================
+function iniciar(){
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
     auth = firebase.auth();
     db = firebase.database();
-    toast('✅ Firebase conectado!');
-    mostrarTela('tela-login');
     ouvirAuth();
-  } catch(e){
-    toast('❌ Erro: '+e.message);
+  } catch(e) {
+    toast('❌ Erro ao conectar: ' + e.message);
   }
 }
 
@@ -679,7 +568,6 @@ function ouvirAuth(){
   auth.onAuthStateChanged(async user=>{
     if(!user){ mostrarTela('tela-login'); return; }
     usuarioAtual = user;
-    // Verifica se é admin
     const snap = await db.ref('admin').once('value');
     const adminEmail = snap.val()?.email;
     if(user.email === adminEmail){
@@ -687,18 +575,15 @@ function ouvirAuth(){
       carregarClientes();
       return;
     }
-    // Carrega dados do usuário
     const snapUser = await db.ref('usuarios/'+user.uid).once('value');
     dadosUsuario = snapUser.val();
     if(!dadosUsuario){ auth.signOut(); return; }
-    // Verifica bloqueio e trial
     const status = verificarStatus(dadosUsuario);
     if(status.bloqueado){
       document.getElementById('bloq-msg').textContent = status.msg;
       mostrarTela('tela-bloqueado');
       return;
     }
-    // Mostra app
     iniciarApp(dadosUsuario, status);
   });
 }
@@ -707,7 +592,6 @@ function verificarStatus(dados){
   const agora = Date.now();
   if(dados.bloqueado_manual) return {bloqueado:true, msg:'Acesso bloqueado pelo administrador. Entre em contato para regularizar.'};
   if(dados.vencimento && agora > dados.vencimento) return {bloqueado:true, msg:'Seu acesso expirou. Renove sua assinatura para continuar usando o PDV Sacolão.'};
-  // Trial
   if(dados.trial_fim && agora > dados.trial_fim && !dados.pago) return {bloqueado:true, msg:'Seu período de teste de 7 dias expirou. Assine para continuar!'};
   const diasRestantes = dados.trial_fim ? Math.ceil((dados.trial_fim - agora)/(1000*60*60*24)) : null;
   return {bloqueado:false, diasRestantes, pago: dados.pago};
@@ -727,7 +611,6 @@ function iniciarApp(dados, status){
     document.getElementById('app-trial-status').textContent = dados.pago ? '✅ Plano ativo' : '';
     if(dados.vencimento) document.getElementById('cfg-vencimento').textContent = new Date(dados.vencimento).toLocaleDateString('pt-BR');
   }
-  // Ouve dados em tempo real
   ouvirDados();
   renderProdutosVenda();
   atualizarDashboard();
@@ -746,7 +629,7 @@ async function criarConta(){
     const cred = await auth.createUserWithEmailAndPassword(email, senha);
     const uid = cred.user.uid;
     const agora = Date.now();
-    const trial_fim = agora + 7*24*60*60*1000; // 7 dias
+    const trial_fim = agora + 7*24*60*60*1000;
     await db.ref('usuarios/'+uid).set({
       loja, nome, tel, email, uid,
       criado: agora, trial_fim, pago: false,
@@ -794,15 +677,11 @@ function mostrarLogin(){ document.getElementById('card-login').style.display='bl
 function mostrarLoginAdmin(){ document.getElementById('card-login').style.display='none'; document.getElementById('card-cadastro').style.display='none'; document.getElementById('card-admin-login').style.display='block'; }
 
 // ===================== FIREBASE DADOS =====================
-function refUser(path){
-  return db.ref('usuarios/'+usuarioAtual.uid+'/'+path);
-}
+function refUser(path){ return db.ref('usuarios/'+usuarioAtual.uid+'/'+path); }
 
 function ouvirDados(){
-  // Ouve dados em tempo real
   refUser('produtos').on('value', snap=>{
-    const val = snap.val() || {};
-    dadosUsuario.produtos = val;
+    dadosUsuario.produtos = snap.val() || {};
     renderProdutos();
     renderProdutosVenda();
     atualizarDashboard();
@@ -845,7 +724,6 @@ function atualizarDashboard(){
   document.getElementById('st-pedidos').textContent=vendasHoje.length;
   document.getElementById('st-prods').textContent=Object.keys(dadosUsuario.produtos||{}).length;
   document.getElementById('st-fiado').textContent=fmt(totalFiado);
-  // Estoque baixo
   const prods = Object.values(dadosUsuario.produtos||{});
   const baixo = prods.filter(p=>p.estoque<=5);
   const lista = document.getElementById('lista-estoque-baixo');
@@ -914,11 +792,10 @@ function renderProdutosVenda(filtro=''){
   if(!dadosUsuario){ lista.innerHTML=''; return; }
   const prods=Object.values(dadosUsuario.produtos||{}).filter(p=>!filtro||p.nome.toLowerCase().includes(filtro));
   if(!Object.keys(dadosUsuario.produtos||{}).length){ lista.innerHTML='<div class="empty-state"><div class="emoji">📦</div><p>Cadastre produtos em <b>Produtos</b> primeiro</p></div>'; return; }
-  if(!prods.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">🔍</div><p>Nenhum produto encontrado para "<b>'+filtro+'</b>"</p></div>'; return; }
+  if(!prods.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">🔍</div><p>Nenhum produto encontrado</p></div>'; return; }
   lista.innerHTML=prods.map(p=>`<div class="pv-item" onclick="abrirQty('${p.id}')"><div class="pv-esq"><span style="font-size:24px">${p.emoji}</span><div><div class="pv-nome">${p.nome}</div><div class="pv-preco">${fmt(p.preco)} / ${p.unidade}</div></div></div><button class="pv-add">+</button></div>`).join('');
 }
 
-let _vozItensLocal=[];
 function filtrarProdutosVenda(){
   const texto=(document.getElementById('busca-venda').value||'').toLowerCase().trim();
   if(!texto){ renderProdutosVenda(''); return; }
@@ -985,7 +862,6 @@ function addTudoVoz(){
 
 function limparBusca(){ document.getElementById('busca-venda').value=''; renderProdutosVenda(); }
 
-// MODAL QTY
 function abrirQty(id){
   const p=Object.values(dadosUsuario.produtos||{}).find(x=>x.id===id);
   if(!p) return;
@@ -1060,12 +936,10 @@ async function finalizarVenda(){
   if(metodoPgto==='fiado'&&!nomeCli){ toast('⚠️ Informe o nome do cliente'); return; }
   const venda={id:uid(),data:new Date().toISOString(),dataFmt:hoje(),itens:[...carrinho],total,pgto:metodoPgto,cliente:nomeCli};
   await refUser('vendas/'+venda.id).set(venda);
-  // Atualiza estoque
   for(const c of carrinho){
     const p=Object.values(dadosUsuario.produtos||{}).find(x=>x.id===c.id);
     if(p){ await refUser('produtos/'+c.id+'/estoque').set(Math.max(0,(p.estoque||0)-c.qty)); }
   }
-  // Fiado
   if(metodoPgto==='fiado'&&nomeCli){
     const fKey=nomeCli.replace(/\s+/g,'_').toLowerCase();
     const snapF=await refUser('fiado/'+fKey).once('value');
@@ -1143,12 +1017,10 @@ function renderRelatorios(){
   document.getElementById('rel-semana').textContent=fmt(s);
   document.getElementById('rel-mes').textContent=fmt(m);
   document.getElementById('rel-fiado').textContent=fmt(f);
-  // Mais vendidos
   const cont={};
   Object.values(dadosUsuario.vendas||{}).forEach(v=>v.itens?.forEach(i=>{ cont[i.nome]=cont[i.nome]||{nome:i.nome,emoji:i.emoji,qty:0,total:0}; cont[i.nome].qty+=i.qty; cont[i.nome].total+=i.preco*i.qty; }));
   const top=Object.values(cont).sort((a,b)=>b.qty-a.qty).slice(0,5);
   document.getElementById('mais-vendidos').innerHTML=!top.length?'<div class="empty-state"><div class="emoji">📊</div><p>Sem vendas ainda</p></div>':top.map((p,i)=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--borda)"><div><b>${['🥇','🥈','🥉','4️⃣','5️⃣'][i]} ${p.emoji} ${p.nome}</b><div style="font-size:12px;color:var(--cinza)">${p.qty.toFixed(2)} vendidos</div></div><span style="font-family:'Fraunces',serif;font-weight:700;color:var(--verde)">${fmt(p.total)}</span></div>`).join('');
-  // Histórico
   const hist=Object.values(dadosUsuario.vendas||{}).sort((a,b)=>new Date(b.data)-new Date(a.data)).slice(0,20);
   document.getElementById('historico-vendas').innerHTML=!hist.length?'<div class="empty-state"><div class="emoji">🛒</div><p>Sem vendas</p></div>':hist.map(v=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--borda)"><div style="font-size:13px"><b>${v.itens?.length||0} item(s)</b> • ${v.pgto.toUpperCase()}<div style="font-size:11px;color:var(--cinza)">${v.dataFmt}</div></div><span style="font-family:'Fraunces',serif;font-weight:700;color:var(--verde);font-size:15px">${fmt(v.total)}</span></div>`).join('');
 }
@@ -1221,14 +1093,8 @@ async function extenderTrial(uid){
   toast('✅ Trial estendido por mais 7 dias!');
 }
 
-// ===================== INIT =====================
-const cfgSalva=localStorage.getItem(CFG_KEY);
-if(cfgSalva){
-  try{ iniciarFirebase(JSON.parse(cfgSalva)); }
-  catch(e){ mostrarTela('tela-setup'); }
-} else {
-  mostrarTela('tela-setup');
-}
+// ===================== INICIAR =====================
+iniciar();
 </script>
 </body>
 </html>
