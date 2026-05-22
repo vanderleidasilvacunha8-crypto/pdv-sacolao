@@ -564,14 +564,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--texto)
 </div>
 
 <!-- MODAL CUPOM -->
-<div class="modal-overlay" id="modal-cupom">
-  <div class="modal" style="max-width:480px;margin:0 auto">
-    <div class="modal-titulo">🧾 Cupom Fiscal</div>
-    <div class="cupom" id="cupom-content"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px">
-      <button class="btn btn-verde" onclick="compartilharCupom()" style="font-size:13px">📤 Compartilhar</button>
-      <button class="btn" onclick="imprimirCupom()" style="background:#2980b9;color:white;font-size:13px">🖨️ Imprimir</button>
-      <button class="btn btn-laranja" onclick="concluirVenda()" style="font-size:13px">✅ Concluir</button>
+<div class="modal-overlay" id="modal-cupom" style="align-items:center;justify-content:center">
+  <div class="modal" style="max-width:620px;width:95%;margin:0 auto;border-radius:24px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-titulo" style="margin-bottom:0">🧾 Cupom Fiscal</div>
+      <div style="font-size:11px;color:var(--cinza);background:var(--verde-s);padding:4px 10px;border-radius:20px">⌨️ ← → Enter navegar</div>
+    </div>
+    <div class="cupom" id="cupom-content" style="font-size:15px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:20px" id="cupom-btns">
+      <button id="cupom-btn-compartilhar" onclick="compartilharCupom()"
+        style="padding:16px;border-radius:14px;border:3px solid transparent;background:#1a3a2a;color:white;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s">
+        📤 Compartilhar
+      </button>
+      <button id="cupom-btn-imprimir" onclick="imprimirCupom()"
+        style="padding:16px;border-radius:14px;border:3px solid transparent;background:#2980b9;color:white;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s">
+        🖨️ Imprimir
+      </button>
+      <button id="cupom-btn-concluir" onclick="concluirVenda()"
+        style="padding:16px;border-radius:14px;border:3px solid transparent;background:#e76f51;color:white;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s">
+        ✅ Concluir
+      </button>
     </div>
   </div>
 </div>
@@ -710,11 +722,19 @@ function iniciarApp(dados, status){
   document.getElementById('cupom-loja-nome').textContent = '🌿 '+nomeLoja;
   document.getElementById('cupom-data-hora').textContent = new Date().toLocaleString('pt-BR');
   renderCarrinho();
-  // Tecla F4 para finalizar
+  // Tecla F4 para finalizar + navegação pagamento + navegação cupom
   document.addEventListener('keydown', e=>{
     if(e.key==='F4'){ e.preventDefault(); finalizarVenda(); }
     navegarPgto(e);
+    navegarCupom(e);
   });
+  // Mapeia ações do cupom
+  ACOES_CUPOM = {
+    compartilhar: compartilharCupom,
+    imprimir: imprimirCupom,
+    concluir: concluirVenda
+  };
+  document.getElementById('modal-cupom').setAttribute('tabindex','-1');
 }
 
 // ===================== CADASTRO / LOGIN =====================
@@ -1158,11 +1178,85 @@ async function finalizarVenda(){
 }
 
 // ===================== CUPOM =====================
-function mostrarCupom(v){
-  const itens=v.itens.map(i=>`<div class="cupom-item"><span>${i.emoji} ${i.nome} (${i.descQty||i.qty+' '+i.unidade})</span><span>${fmt(i.preco*i.qty)}</span></div>`).join('');
-  document.getElementById('cupom-content').innerHTML=`<div style="text-align:center;margin-bottom:12px"><div class="cupom-loja">🌿 ${dadosUsuario.loja||'PDV Sacolão'}</div><div style="font-size:12px;color:var(--cinza)">${v.dataFmt}</div></div><div class="cupom-linha"></div>${itens}<div class="cupom-linha"></div><div class="cupom-total"><span>TOTAL</span><span>${fmt(v.total)}</span></div><div style="font-size:12px;color:var(--cinza);margin-top:8px">Pagamento: ${v.pgto.toUpperCase()}${v.cliente?' • '+v.cliente:''}</div><div style="text-align:center;font-size:11px;color:var(--cinza);margin-top:12px">Obrigado! 💚</div>`;
-  document.getElementById('modal-cupom').classList.add('show');
+// Índice do botão selecionado: 0=compartilhar, 1=imprimir, 2=concluir
+let cupomBtnIdx = 2; // começa no Concluir
+const CUPOM_BTNS = ['compartilhar','imprimir','concluir'];
+const CUPOM_ACOES = {
+  compartilhar: compartilharCupomFn,
+  imprimir: imprimirCupomFn,
+  concluir: concluirVenda
+};
+
+function atualizarCupomBtns(){
+  CUPOM_BTNS.forEach((b,i)=>{
+    const el=document.getElementById('cupom-btn-'+b);
+    if(!el) return;
+    if(i===cupomBtnIdx){
+      el.style.border='3px solid white';
+      el.style.boxShadow='0 0 0 3px rgba(255,255,255,0.5), 0 4px 16px rgba(0,0,0,0.3)';
+      el.style.transform='scale(1.04)';
+    } else {
+      el.style.border='3px solid transparent';
+      el.style.boxShadow='none';
+      el.style.transform='scale(1)';
+    }
+  });
 }
+
+function navegarCupom(e){
+  const modal=document.getElementById('modal-cupom');
+  if(!modal.classList.contains('show')) return;
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'){
+    e.preventDefault();
+    cupomBtnIdx=(cupomBtnIdx+1)%CUPOM_BTNS.length;
+    atualizarCupomBtns();
+  } else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){
+    e.preventDefault();
+    cupomBtnIdx=(cupomBtnIdx-1+CUPOM_BTNS.length)%CUPOM_BTNS.length;
+    atualizarCupomBtns();
+  } else if(e.key==='Enter'){
+    e.preventDefault();
+    const acao=ACOES_CUPOM[CUPOM_BTNS[cupomBtnIdx]];
+    if(acao) acao();
+  }
+}
+// Mapa de ações (definido após as funções)
+let ACOES_CUPOM = {};
+
+function mostrarCupom(v){
+  const itens=v.itens.map(i=>`
+    <div class="cupom-item" style="padding:10px 0;border-bottom:1px dashed #e0e0e0">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#1a3a2a">${i.emoji} ${i.nome}</div>
+          <div style="font-size:12px;color:#666;margin-top:2px">${i.descQty||i.qty+' '+i.unidade} × ${fmt(i.preco)}</div>
+        </div>
+        <div style="font-weight:800;font-size:16px;color:#c0392b;white-space:nowrap">${fmt(i.preco*i.qty)}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('cupom-content').innerHTML=`
+    <div style="text-align:center;margin-bottom:14px">
+      <div class="cupom-loja" style="font-size:22px">🌿 ${dadosUsuario.loja||'PDV Sacolão'}</div>
+      <div style="font-size:12px;color:var(--cinza);margin-top:4px">${v.dataFmt} • ${new Date().toLocaleTimeString('pt-BR')}</div>
+    </div>
+    <div class="cupom-linha"></div>
+    ${itens}
+    <div class="cupom-linha" style="margin-top:8px"></div>
+    <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:900;padding:10px 0;color:#1a3a2a">
+      <span>TOTAL</span><span style="color:#c0392b">${fmt(v.total)}</span>
+    </div>
+    <div style="font-size:13px;color:#666;margin-top:4px">💳 Pagamento: <b>${v.pgto.toUpperCase()}</b>${v.cliente?' • '+v.cliente:''}</div>
+    <div style="text-align:center;font-size:13px;color:#888;margin-top:12px">Obrigado pela preferência! 💚</div>`;
+  // Reset botão selecionado para Concluir
+  cupomBtnIdx=2;
+  document.getElementById('modal-cupom').classList.add('show');
+  setTimeout(atualizarCupomBtns, 50);
+  // Foca o modal para capturar teclado
+  document.getElementById('modal-cupom').focus();
+}
+
+function compartilharCupomFn(){ compartilharCupom(); }
+function imprimirCupomFn(){ imprimirCupom(); }
 
 function compartilharCupom(){
   if(!ultimaVenda) return;
