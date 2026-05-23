@@ -647,7 +647,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
       </div>
     </div>
 
-    <div style="padding:20px 20px 24px;overflow-y:auto;max-height:calc(96vh - 160px)">
+    <div id="modal-pgto-container" tabindex="-1" style="padding:20px 20px 24px;overflow-y:auto;max-height:calc(96vh - 160px);outline:none">
       <!-- Formas de pagamento -->
       <div style="font-size:11px;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Forma de pagamento</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
@@ -1259,40 +1259,69 @@ function navegarModalPagamento(e){
   const modal = document.getElementById('modal-pagamento');
   if(!modal.classList.contains('show')) return;
 
-  // Se o foco está no input de valor recebido ou fiado, não interfere nas setas
   const focado = document.activeElement;
-  const inputs = ['modal-valor-recebido','modal-cliente-fiado','desconto-geral'];
-  if(inputs.includes(focado?.id)) return;
+  const emInput = ['modal-valor-recebido','modal-cliente-fiado','desconto-geral'].includes(focado?.id);
+
+  // Se está em input: só captura Escape para voltar ao container
+  if(emInput){
+    if(e.key==='Escape'){
+      e.preventDefault();
+      document.getElementById('modal-pgto-container').focus();
+    }
+    return;
+  }
 
   const tipos = PGTO_GRADE.flat();
   const posAtual = tipos.indexOf(metodoPgto);
   const col = posAtual % 3;
   const lin = Math.floor(posAtual / 3);
-
   let novaLin = lin, novaCol = col;
 
   if(e.key==='ArrowRight'){ e.preventDefault(); novaCol = Math.min(2, col+1); }
   else if(e.key==='ArrowLeft'){ e.preventDefault(); novaCol = Math.max(0, col-1); }
   else if(e.key==='ArrowDown'){ e.preventDefault(); novaLin = Math.min(1, lin+1); }
   else if(e.key==='ArrowUp'){ e.preventDefault(); novaLin = Math.max(0, lin-1); }
-  else if(e.key==='Enter'){ e.preventDefault(); confirmarPagamento(); return; }
+  else if(e.key==='Enter'){
+    e.preventDefault();
+    // se dinheiro ou fiado, foca o campo primeiro
+    if(metodoPgto==='dinheiro'){
+      const campo = document.getElementById('modal-valor-recebido');
+      const val = parseFloat(campo.value)||0;
+      if(val===0){ campo.focus(); campo.select(); return; }
+    }
+    if(metodoPgto==='fiado'){
+      const campo = document.getElementById('modal-cliente-fiado');
+      if(!campo.value.trim()){ campo.focus(); return; }
+    }
+    confirmarPagamento();
+    return;
+  }
   else if(e.key==='Escape'){ e.preventDefault(); fecharModalPagamento(); return; }
+  else if(e.key==='Tab'){
+    e.preventDefault();
+    // Tab foca o campo de entrada se disponível
+    if(metodoPgto==='dinheiro') document.getElementById('modal-valor-recebido')?.focus();
+    else if(metodoPgto==='fiado') document.getElementById('modal-cliente-fiado')?.focus();
+    else confirmarPagamento();
+    return;
+  }
   else return;
 
   const novo = PGTO_GRADE[novaLin]?.[novaCol];
-  if(novo && novo !== metodoPgto){ selecionarPgtoModal(novo); }
+  if(novo && novo !== metodoPgto){ selecionarPgtoModal(novo, false); }
 }
 
 function abrirModalPagamento(){
   if(!carrinho.length){ toast('⚠️ Adicione produtos primeiro',''); return; }
   atualizarModalPgto();
-  selecionarPgtoModal('dinheiro');
+  selecionarPgtoModal('dinheiro', false); // false = não focar input automaticamente
   document.getElementById('modal-valor-recebido').value='';
   document.getElementById('modal-troco-box').style.display='none';
   document.getElementById('modal-troco-alerta').style.display='none';
   document.getElementById('modal-cliente-fiado').value='';
   document.getElementById('modal-pagamento').classList.add('show');
-  setTimeout(()=>document.getElementById('modal-valor-recebido').focus(),300);
+  // foca o container do modal para capturar teclado
+  setTimeout(()=>{ document.getElementById('modal-pgto-container').focus(); }, 150);
 }
 
 function fecharModalPagamento(){
@@ -1309,17 +1338,18 @@ function atualizarModalPgto(){
   document.getElementById('atalhos-troco').innerHTML = vals.map(v=>`<button onclick="document.getElementById('modal-valor-recebido').value=${v};calcTrocoModal()" style="padding:8px 14px;border-radius:8px;border:1.5px solid var(--borda);background:var(--branco);font-size:13px;font-weight:700;cursor:pointer;color:var(--verde)">${fmt(v)}</button>`).join('');
 }
 
-function selecionarPgtoModal(tipo){
+function selecionarPgtoModal(tipo, autoFocus=true){
   metodoPgto = tipo;
   document.querySelectorAll('.pgto-card').forEach(b=>b.classList.remove('sel'));
   document.getElementById('pc-'+tipo)?.classList.add('sel');
   document.getElementById('area-modal-dinheiro').style.display = tipo==='dinheiro'?'block':'none';
   document.getElementById('area-modal-fiado').style.display = tipo==='fiado'?'block':'none';
-  // foca o campo relevante após animação
-  setTimeout(()=>{
-    if(tipo==='dinheiro') document.getElementById('modal-valor-recebido')?.focus();
-    if(tipo==='fiado') document.getElementById('modal-cliente-fiado')?.focus();
-  }, 80);
+  if(autoFocus){
+    setTimeout(()=>{
+      if(tipo==='dinheiro') document.getElementById('modal-valor-recebido')?.focus();
+      if(tipo==='fiado') document.getElementById('modal-cliente-fiado')?.focus();
+    }, 80);
+  }
 }
 
 function calcTrocoModal(){
