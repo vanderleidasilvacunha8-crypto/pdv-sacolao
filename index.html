@@ -632,7 +632,10 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
           <div style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px">Total a pagar</div>
           <div style="font-family:'Fraunces',serif;font-size:44px;font-weight:900;color:var(--amarelo);line-height:1;margin-top:4px" id="pgto-total-display">R$ 0,00</div>
         </div>
-        <button onclick="fecharModalPagamento()" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <button onclick="fecharModalPagamento()" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+          <div style="font-size:10px;color:rgba(255,255,255,0.45);text-align:right;line-height:1.4">⌨️ ↑↓←→ navegar<br>Enter confirmar · Esc fechar</div>
+        </div>
       </div>
       <!-- desconto geral -->
       <div style="display:flex;align-items:center;gap:8px;margin-top:10px;background:rgba(0,0,0,0.2);border-radius:10px;padding:8px 12px">
@@ -679,6 +682,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
         <div style="font-size:11px;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Valor recebido</div>
         <input type="number" id="modal-valor-recebido" placeholder="R$ 0,00" min="0" step="0.01" inputmode="decimal"
           oninput="calcTrocoModal()"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();confirmarPagamento();}"
           style="width:100%;padding:16px;border-radius:var(--radius-sm);border:2px solid var(--borda);font-size:24px;font-weight:900;text-align:center;outline:none;color:var(--verde);font-family:'Fraunces',serif;background:var(--creme)">
         <!-- atalhos de valor -->
         <div id="atalhos-troco" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
@@ -698,6 +702,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
       <div id="area-modal-fiado" style="display:none;margin-bottom:16px">
         <div style="font-size:11px;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Nome do cliente</div>
         <input type="text" id="modal-cliente-fiado" placeholder="Digite o nome do cliente..."
+          onkeydown="if(event.key==='Enter'){event.preventDefault();confirmarPagamento();}"
           style="width:100%;padding:14px;border-radius:var(--radius-sm);border:2px solid var(--borda);font-size:16px;outline:none;color:var(--texto)">
       </div>
 
@@ -916,6 +921,7 @@ function iniciarApp(dados, status){
   renderCarrinho();
   document.addEventListener('keydown', e=>{
     if(e.key==='F4'){ e.preventDefault(); abrirModalPagamento(); }
+    navegarModalPagamento(e);
     navegarCupom(e);
   });
   ACOES_CUPOM = { compartilhar:compartilharCupom, imprimir:imprimirCupom, concluir:concluirVenda };
@@ -1243,6 +1249,40 @@ document.addEventListener('click',e=>{
 
 // ===== MODAL PAGAMENTO =====
 
+// grade de pagamentos: [linha][coluna]
+const PGTO_GRADE = [
+  ['dinheiro','pix','credito'],
+  ['debito','fiado','voucher']
+];
+
+function navegarModalPagamento(e){
+  const modal = document.getElementById('modal-pagamento');
+  if(!modal.classList.contains('show')) return;
+
+  // Se o foco está no input de valor recebido ou fiado, não interfere nas setas
+  const focado = document.activeElement;
+  const inputs = ['modal-valor-recebido','modal-cliente-fiado','desconto-geral'];
+  if(inputs.includes(focado?.id)) return;
+
+  const tipos = PGTO_GRADE.flat();
+  const posAtual = tipos.indexOf(metodoPgto);
+  const col = posAtual % 3;
+  const lin = Math.floor(posAtual / 3);
+
+  let novaLin = lin, novaCol = col;
+
+  if(e.key==='ArrowRight'){ e.preventDefault(); novaCol = Math.min(2, col+1); }
+  else if(e.key==='ArrowLeft'){ e.preventDefault(); novaCol = Math.max(0, col-1); }
+  else if(e.key==='ArrowDown'){ e.preventDefault(); novaLin = Math.min(1, lin+1); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); novaLin = Math.max(0, lin-1); }
+  else if(e.key==='Enter'){ e.preventDefault(); confirmarPagamento(); return; }
+  else if(e.key==='Escape'){ e.preventDefault(); fecharModalPagamento(); return; }
+  else return;
+
+  const novo = PGTO_GRADE[novaLin]?.[novaCol];
+  if(novo && novo !== metodoPgto){ selecionarPgtoModal(novo); }
+}
+
 function abrirModalPagamento(){
   if(!carrinho.length){ toast('⚠️ Adicione produtos primeiro',''); return; }
   atualizarModalPgto();
@@ -1275,6 +1315,11 @@ function selecionarPgtoModal(tipo){
   document.getElementById('pc-'+tipo)?.classList.add('sel');
   document.getElementById('area-modal-dinheiro').style.display = tipo==='dinheiro'?'block':'none';
   document.getElementById('area-modal-fiado').style.display = tipo==='fiado'?'block':'none';
+  // foca o campo relevante após animação
+  setTimeout(()=>{
+    if(tipo==='dinheiro') document.getElementById('modal-valor-recebido')?.focus();
+    if(tipo==='fiado') document.getElementById('modal-cliente-fiado')?.focus();
+  }, 80);
 }
 
 function calcTrocoModal(){
