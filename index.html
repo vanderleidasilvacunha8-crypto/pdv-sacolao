@@ -226,6 +226,20 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--borda);border-radius:4px}
 
+/* ===== FILTRO PGTO ===== */
+.btn-pgto-filtro{padding:6px 14px;border-radius:20px;border:1.5px solid var(--borda);background:var(--branco);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--cinza);cursor:pointer;transition:all 0.2s}
+.btn-pgto-filtro.ativo{background:var(--verde);color:white;border-color:var(--verde)}
+.pgto-resumo-card{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--borda);margin-bottom:8px;transition:all 0.2s;background:var(--branco)}
+.pgto-resumo-card:hover{border-color:var(--verde-c);background:var(--verde-s)}
+.pgto-resumo-esq{display:flex;align-items:center;gap:10px}
+.pgto-resumo-icon{font-size:24px;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pgto-resumo-label{font-weight:700;font-size:14px;color:var(--texto)}
+.pgto-resumo-qtd{font-size:11px;color:var(--cinza);margin-top:2px}
+.pgto-resumo-valor{text-align:right}
+.pgto-resumo-total{font-family:'Fraunces',serif;font-weight:900;font-size:18px;color:var(--verde)}
+.pgto-resumo-pct{font-size:11px;color:var(--cinza);margin-top:2px}
+.pgto-resumo-bar{height:4px;border-radius:2px;margin-top:6px;transition:width 0.4s}
+
 /* ===== COD PRODUTO ===== */
 .cod-badge{background:var(--verde-s);color:var(--verde-m);border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700;font-family:monospace;letter-spacing:0.5px}
 </style>
@@ -490,8 +504,16 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
       <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-valor" id="rel-fiado">R$ 0</div><div class="stat-label">Fiado</div></div>
     </div>
     <div class="card">
-      <div class="card-titulo">📊 Vendas por forma de pagamento</div>
-      <div class="chart-container" style="height:180px"><canvas id="chart-pgto"></canvas></div>
+      <div class="card-titulo">💳 Resumo por forma de pagamento</div>
+      <!-- filtro de período -->
+      <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn-pgto-filtro ativo" onclick="filtrarPgto('tudo',this)">📋 Tudo</button>
+        <button class="btn-pgto-filtro" onclick="filtrarPgto('hoje',this)">📅 Hoje</button>
+        <button class="btn-pgto-filtro" onclick="filtrarPgto('semana',this)">📆 Semana</button>
+        <button class="btn-pgto-filtro" onclick="filtrarPgto('mes',this)">🗓️ Mês</button>
+      </div>
+      <div id="resumo-pgto-cards"></div>
+      <div class="chart-container" style="height:180px;margin-top:14px"><canvas id="chart-pgto"></canvas></div>
     </div>
     <div class="card">
       <div class="card-titulo">📈 Vendas — últimos 7 dias</div>
@@ -1303,7 +1325,7 @@ function navegarCupom(e){
 function mostrarCupom(v){
   const descGeral=v.descGeral||0;
   const itensHtml=v.itens.map(i=>`<div style="padding:9px 0;border-bottom:1px dashed #e0e0e0"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><div style="font-size:14px;font-weight:700;color:#1a3a2a">${i.emoji} ${i.nome}</div><div style="font-size:12px;color:#666;margin-top:2px">${i.descQty||i.qty+' '+i.unidade} × ${fmt(i.precoUnit||i.preco)}${i.descPct>0?' <span style="color:#b91c1c;font-weight:700">(-'+i.descPct+'%)</span>':''}</div></div><div style="font-weight:800;font-size:15px;color:#b91c1c;white-space:nowrap">${fmt(i.total||i.precoUnit*i.qty)}</div></div></div>`).join('');
-  document.getElementById('cupom-content').innerHTML=`<div style="text-align:center;margin-bottom:14px"><div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:#1a3a2a">🌿 ${dadosUsuario.loja||'PDV Sacolão'}</div><div style="font-size:12px;color:#888;margin-top:4px">${v.dataFmt} • ${new Date().toLocaleTimeString('pt-BR')}</div></div><hr style="border:none;border-top:2px dashed #ddd;margin:12px 0">${itensHtml}<hr style="border:none;border-top:2px dashed #ddd;margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13px;color:#888;margin-bottom:4px"><span>Subtotal</span><span>${fmt(v.subtotal||v.total)}</span></div>${descGeral>0?`<div style="display:flex;justify-content:space-between;font-size:13px;color:#b91c1c;margin-bottom:4px"><span>Desconto geral (${descGeral}%)</span><span>- ${fmt((v.subtotal||v.total)*descGeral/100)}</span></div>`:''}<div style="display:flex;justify-content:space-between;font-size:20px;font-weight:900;padding:10px 0;color:#1a3a2a"><span>TOTAL</span><span style="color:#b91c1c">${fmt(v.total)}</span></div><div style="font-size:13px;color:#666;margin-top:4px">💳 ${v.pgto.toUpperCase()}${v.cliente?' • '+v.cliente:''}</div><div style="text-align:center;font-size:13px;color:#999;margin-top:12px">Obrigado pela preferência! 💚</div>`;
+  document.getElementById('cupom-content').innerHTML=`<div style="text-align:center;margin-bottom:14px"><div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:#1a3a2a">${dadosUsuario.loja||'Minha Loja'}</div><div style="font-size:12px;color:#888;margin-top:4px">${v.dataFmt} • ${new Date().toLocaleTimeString('pt-BR')}</div></div><hr style="border:none;border-top:2px dashed #ddd;margin:12px 0">${itensHtml}<hr style="border:none;border-top:2px dashed #ddd;margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13px;color:#888;margin-bottom:4px"><span>Subtotal</span><span>${fmt(v.subtotal||v.total)}</span></div>${descGeral>0?`<div style="display:flex;justify-content:space-between;font-size:13px;color:#b91c1c;margin-bottom:4px"><span>Desconto geral (${descGeral}%)</span><span>- ${fmt((v.subtotal||v.total)*descGeral/100)}</span></div>`:''}<div style="display:flex;justify-content:space-between;font-size:20px;font-weight:900;padding:10px 0;color:#1a3a2a"><span>TOTAL</span><span style="color:#b91c1c">${fmt(v.total)}</span></div><div style="font-size:13px;color:#666;margin-top:4px">💳 ${v.pgto.toUpperCase()}${v.cliente?' • '+v.cliente:''}</div><div style="text-align:center;font-size:13px;color:#999;margin-top:12px">Obrigado pela preferência! 💚</div>`;
   cupomBtnIdx=2; document.getElementById('modal-cupom').classList.add('show');
   setTimeout(atualizarCupomBtns,50);
 }
@@ -1442,6 +1464,7 @@ function renderRelatorios(){
   document.getElementById('rel-hoje').textContent=fmt(h); document.getElementById('rel-semana').textContent=fmt(s);
   document.getElementById('rel-mes').textContent=fmt(m); document.getElementById('rel-fiado').textContent=fmt(f);
   renderGraficoSemana('chart-semana-rel');
+  renderResumoPgto();
   const pgtoMap={dinheiro:0,pix:0,cartao:0,fiado:0};
   Object.values(dadosUsuario.vendas||{}).forEach(v=>{ if(pgtoMap[v.pgto]!==undefined) pgtoMap[v.pgto]+=v.total; });
   const ctxPgto=document.getElementById('chart-pgto');
@@ -1578,6 +1601,95 @@ function recompartilharCupom(){
   const txt = gerarTextoCupom(vendaSelecionada) + '\n⟳ 2ª via';
   if(navigator.share) navigator.share({title:'Cupom',text:txt}).catch(()=>copiarTxt(txt));
   else copiarTxt(txt);
+}
+
+
+// ===== RESUMO POR FORMA DE PAGAMENTO =====
+let _filtroPgto = 'tudo';
+
+function filtrarPgto(periodo, btn){
+  _filtroPgto = periodo;
+  document.querySelectorAll('.btn-pgto-filtro').forEach(b=>b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  renderResumoPgto();
+}
+
+function renderResumoPgto(){
+  const todasVendas = Object.values(dadosUsuario?.vendas||{});
+  const agora = new Date(); const diaHoje = hoje();
+  const inicioSemana = new Date(agora); inicioSemana.setDate(agora.getDate()-agora.getDay());
+  const inicioMes = new Date(agora.getFullYear(),agora.getMonth(),1);
+
+  let vendas;
+  if(_filtroPgto==='hoje')   vendas = todasVendas.filter(v=>v.dataFmt===diaHoje);
+  else if(_filtroPgto==='semana') vendas = todasVendas.filter(v=>new Date(v.data)>=inicioSemana);
+  else if(_filtroPgto==='mes')    vendas = todasVendas.filter(v=>new Date(v.data)>=inicioMes);
+  else vendas = todasVendas;
+
+  const formas = [
+    {key:'dinheiro', label:'Dinheiro',  icon:'💵', bg:'#e6f5ed', cor:'#16a34a'},
+    {key:'pix',      label:'Pix',       icon:'📱', bg:'#eff6ff', cor:'#2563eb'},
+    {key:'credito',  label:'Crédito',   icon:'💳', bg:'#fefce8', cor:'#ca8a04'},
+    {key:'debito',   label:'Débito',    icon:'💶', bg:'#f5f3ff', cor:'#7c3aed'},
+    {key:'fiado',    label:'Fiado',     icon:'🤝', bg:'#fff7ed', cor:'#ea580c'},
+    {key:'voucher',  label:'Voucher',   icon:'🎟️', bg:'#fdf2f8', cor:'#9d174d'},
+  ];
+
+  const totGeral = vendas.reduce((s,v)=>s+v.total,0);
+
+  const stats = formas.map(f=>{
+    const grupo = vendas.filter(v=>v.pgto===f.key);
+    const total = grupo.reduce((s,v)=>s+v.total,0);
+    const qtd   = grupo.length;
+    const pct   = totGeral>0 ? Math.round(total/totGeral*100) : 0;
+    return {...f, total, qtd, pct};
+  }).filter(f=>f.total>0 || f.qtd>0);
+
+  const el = document.getElementById('resumo-pgto-cards');
+  if(!el) return;
+
+  if(!stats.length || totGeral===0){
+    el.innerHTML='<div class="empty-state"><div class="emoji">📊</div><p>Sem vendas no período</p></div>';
+    return;
+  }
+
+  el.innerHTML = stats.map(f=>`
+    <div class="pgto-resumo-card">
+      <div class="pgto-resumo-esq">
+        <div class="pgto-resumo-icon" style="background:${f.bg}">${f.icon}</div>
+        <div>
+          <div class="pgto-resumo-label">${f.label}</div>
+          <div class="pgto-resumo-qtd">${f.qtd} venda${f.qtd!==1?'s':''}</div>
+          <div class="pgto-resumo-bar" style="width:${Math.max(f.pct,4)}%;background:${f.cor};opacity:0.5;max-width:140px"></div>
+        </div>
+      </div>
+      <div class="pgto-resumo-valor">
+        <div class="pgto-resumo-total" style="color:${f.cor}">${fmt(f.total)}</div>
+        <div class="pgto-resumo-pct">${f.pct}% do total</div>
+      </div>
+    </div>`).join('');
+
+  // Atualizar gráfico pizza com filtro aplicado
+  const pgtoMap = {};
+  formas.forEach(f=>{ pgtoMap[f.label] = stats.find(s=>s.key===f.key)?.total||0; });
+  const labels = formas.map(f=>f.icon+' '+f.label);
+  const dados  = formas.map(f=>stats.find(s=>s.key===f.key)?.total||0);
+  const cores  = formas.map(f=>f.cor);
+  const ctxPgto = document.getElementById('chart-pgto');
+  if(ctxPgto){
+    if(graficos['pgto']) graficos['pgto'].destroy();
+    graficos['pgto'] = new Chart(ctxPgto,{
+      type:'doughnut',
+      data:{labels,datasets:[{data:dados,backgroundColor:cores,borderWidth:2,borderColor:'#fff'}]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}},
+          tooltip:{callbacks:{label:c=>' '+fmt(c.raw)+' ('+Math.round(c.raw/totGeral*100)+'%)'}}
+        }
+      }
+    });
+  }
 }
 
 iniciar();
