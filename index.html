@@ -235,7 +235,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
 <!-- ===== LOGIN ===== -->
 <div class="tela ativa" id="tela-login">
   <div class="auth-bg">
-    <div class="auth-logo">🌿 PDV<span>Sacolão</span></div>
+    <div class="auth-logo">🏪 <span id="login-nome-sistema">Meu PDV</span></div>
     <div class="auth-sub">Gestão inteligente para seu negócio</div>
     <div class="auth-card" id="card-login">
       <div class="trial-badge">🎁 7 dias grátis para novos clientes</div>
@@ -284,7 +284,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
 <div class="tela" id="tela-app">
   <div class="app-header">
     <div class="app-header-top">
-      <div class="app-logo">🌿 PDV<span>Sacolão</span></div>
+      <div class="app-logo" id="app-logo-header">🏪 <span id="app-logo-nome">Minha Loja</span></div>
       <div class="app-user">
         <div class="app-user-nome" id="app-loja-nome">Minha Loja</div>
         <div class="app-user-status" id="app-trial-status"></div>
@@ -834,6 +834,7 @@ function verificarStatus(d){
 function iniciarApp(dados, status){
   mostrarTela('tela-app');
   document.getElementById('app-loja-nome').textContent = dados.loja||'Minha Loja';
+  if(document.getElementById('app-logo-nome')) document.getElementById('app-logo-nome').textContent = dados.loja||'Minha Loja';
   document.getElementById('cfg-loja-nome').textContent = dados.loja||'—';
   document.getElementById('cfg-email').textContent = usuarioAtual.email;
   document.getElementById('cfg-status').textContent = dados.pago?'✅ Ativo':'⏳ Trial';
@@ -845,7 +846,7 @@ function iniciarApp(dados, status){
     document.getElementById('app-trial-status').textContent = dados.pago?'✅ Plano ativo':'';
     if(dados.vencimento) document.getElementById('cfg-vencimento').textContent = new Date(dados.vencimento).toLocaleDateString('pt-BR');
   }
-  document.getElementById('cupom-loja-nome').textContent = '🧾 Consumidor Final';
+  document.getElementById('cupom-loja-nome').textContent = dados.loja||'Minha Loja';
   document.getElementById('cupom-data-hora').textContent = new Date().toLocaleString('pt-BR');
   ouvirDados(); renderCarrinho();
   document.addEventListener('keydown', e=>{
@@ -1250,7 +1251,7 @@ function gerarTextoCupom(v){
   const descGeral = v.descGeral||0;
   const descTxt = descGeral>0 ? `\n🏷️ Desconto (${descGeral}%): -${fmt((v.subtotal||v.total)*descGeral/100)}` : '';
   const trocoTxt = v.troco>0 ? `\n🔄 Troco: ${fmt(v.troco)}` : '';
-  return `🌿 *${dadosUsuario.loja||'PDV Sacolão'}*\n`+`📅 ${v.dataFmt}${hora?' às '+hora:''}\n`+`${'─'.repeat(28)}\n`+(v.itens||[]).map(i=>`${i.emoji||''} *${i.nome}*\n   ${i.descQty||i.qty+' '+i.unidade} × ${fmt(i.precoUnit||i.preco)}${i.descPct>0?' (-'+i.descPct+'%)':''} = *${fmt(i.total||i.precoUnit*i.qty||i.preco*i.qty)}*`).join('\n')+`\n${'─'.repeat(28)}${descTxt}\n💰 *TOTAL: ${fmt(v.total)}*\n💳 ${v.pgtoLabel||v.pgto}${v.cliente?' • '+v.cliente:''}${trocoTxt}\n\n_Obrigado pela preferência! 💚_`;
+  return `🏪 *${dadosUsuario.loja||'Minha Loja'}*\n`+`📅 ${v.dataFmt}${hora?' às '+hora:''}\n`+`${'─'.repeat(28)}\n`+(v.itens||[]).map(i=>`${i.emoji||''} *${i.nome}*\n   ${i.descQty||i.qty+' '+i.unidade} × ${fmt(i.precoUnit||i.preco)}${i.descPct>0?' (-'+i.descPct+'%)':''} = *${fmt(i.total||i.precoUnit*i.qty||i.preco*i.qty)}*`).join('\n')+`\n${'─'.repeat(28)}${descTxt}\n💰 *TOTAL: ${fmt(v.total)}*\n💳 ${v.pgtoLabel||v.pgto}${v.cliente?' • '+v.cliente:''}${trocoTxt}\n\n_Obrigado pela preferência! 💚_`;
 }
 
 function proximaVenda(){
@@ -1322,7 +1323,7 @@ function copiarTxt(txt){
 function imprimirCupom(){
   if(!ultimaVenda) return;
   const v = ultimaVenda;
-  const loja = dadosUsuario?.loja || 'PDV Sacolão';
+  const loja = dadosUsuario?.loja || 'Minha Loja';
   const hora = v.data ? new Date(v.data).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
   const descGeral = v.descGeral||0;
   const subtotal = v.subtotal||v.total;
@@ -1344,7 +1345,7 @@ function imprimirCupom(){
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Outfit',sans-serif;background:#fff;color:#1a1a1a;padding:20mm 22mm;}
     .header{text-align:center;border-bottom:3px solid #0f2318;padding-bottom:8mm;margin-bottom:8mm;}
-    .logo{font-size:24pt;font-weight:900;color:#0f2318;letter-spacing:-1px;}
+    .logo{font-size:20pt;font-weight:900;color:#0f2318;letter-spacing:-0.5px;margin-bottom:2mm;text-transform:uppercase;}
     .logo-v{color:#3db87a;}
     .loja-nome{font-size:13pt;font-weight:700;color:#444;margin-top:2mm;}
     .data-hora{font-size:10pt;color:#777;margin-top:2mm;}
@@ -1366,8 +1367,7 @@ function imprimirCupom(){
     @media print{body{padding:15mm 18mm;}@page{size:A4 portrait;margin:0;}}
   </style></head><body>
   <div class="header">
-    <div class="logo">🌿 PDV<span class="logo-v">Sacolão</span></div>
-    <div class="loja-nome">${loja}</div>
+    <div class="logo">${loja}</div>
     <div class="data-hora">📅 ${v.dataFmt}${hora?' • ⏰ '+hora:''}</div>
   </div>
   <div class="secao">📦 Itens da venda</div>
@@ -1456,7 +1456,7 @@ function renderRelatorios(){
 
 function exportarRelatorio(){
   const txt=`📊 RELATÓRIO — ${dadosUsuario?.loja||''}\n${new Date().toLocaleDateString('pt-BR')}\n\nHoje: ${document.getElementById('rel-hoje').textContent}\nSemana: ${document.getElementById('rel-semana').textContent}\nMês: ${document.getElementById('rel-mes').textContent}\nFiado em aberto: ${document.getElementById('rel-fiado').textContent}`;
-  if(navigator.share) navigator.share({title:'Relatório PDV Sacolão',text:txt}).catch(()=>copiarTxt(txt));
+  if(navigator.share) navigator.share({title:'Relatório '+(dadosUsuario?.loja||'Minha Loja'),text:txt}).catch(()=>copiarTxt(txt));
   else copiarTxt(txt);
 }
 
@@ -1510,7 +1510,7 @@ function verVenda(id){
 function reimprimirCupom(){
   if(!vendaSelecionada) return;
   const v = vendaSelecionada;
-  const loja = dadosUsuario?.loja || 'PDV Sacolão';
+  const loja = dadosUsuario?.loja || 'Minha Loja';
   const hora = v.data ? new Date(v.data).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
   const descGeral = v.descGeral||0;
   const subtotal = v.subtotal||v.total;
@@ -1533,7 +1533,7 @@ function reimprimirCupom(){
     body{font-family:'Outfit',sans-serif;background:#fff;color:#1a1a1a;padding:20mm 22mm;}
     .via{background:#f5f5f5;border:1px solid #ddd;border-radius:6px;padding:2mm 6mm;font-size:9pt;color:#999;text-align:center;margin-bottom:5mm;letter-spacing:1px;}
     .header{text-align:center;border-bottom:3px solid #0f2318;padding-bottom:8mm;margin-bottom:8mm;}
-    .logo{font-size:24pt;font-weight:900;color:#0f2318;letter-spacing:-1px;}
+    .logo{font-size:20pt;font-weight:900;color:#0f2318;letter-spacing:-0.5px;margin-bottom:2mm;text-transform:uppercase;}
     .logo-v{color:#3db87a;}
     .loja-nome{font-size:13pt;font-weight:700;color:#444;margin-top:2mm;}
     .data-hora{font-size:10pt;color:#777;margin-top:2mm;}
@@ -1553,8 +1553,7 @@ function reimprimirCupom(){
   </style></head><body>
   <div class="via">⟳ 2ª VIA DO CUPOM FISCAL</div>
   <div class="header">
-    <div class="logo">🌿 PDV<span class="logo-v">Sacolão</span></div>
-    <div class="loja-nome">${loja}</div>
+    <div class="logo">${loja}</div>
     <div class="data-hora">📅 ${v.dataFmt}${hora?' • ⏰ '+hora:''}</div>
   </div>
   <div class="secao">📦 Itens da venda</div>
