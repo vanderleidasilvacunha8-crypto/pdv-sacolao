@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f2318">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>🌿 PDV Sacolão Pro</title>
+<title>🧾 Cupom - Consumidor Final</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -390,7 +390,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
       </div>
       <div style="flex:1;display:flex;flex-direction:column;background:#b91c1c;overflow:hidden">
         <div style="padding:14px 18px;background:#991b1b;border-bottom:1px solid rgba(0,0,0,0.2)">
-          <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:#fff;text-align:center" id="cupom-loja-nome">🌿 PDV Sacolão</div>
+          <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:#fff;text-align:center" id="cupom-loja-nome">🧾 Consumidor Final</div>
           <div style="font-size:11px;color:rgba(255,255,255,0.55);text-align:center;margin-top:2px" id="cupom-data-hora"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 75px 85px 26px;gap:3px;padding:7px 16px;background:#991b1b;border-bottom:1px solid rgba(0,0,0,0.15)">
@@ -845,7 +845,7 @@ function iniciarApp(dados, status){
     document.getElementById('app-trial-status').textContent = dados.pago?'✅ Plano ativo':'';
     if(dados.vencimento) document.getElementById('cfg-vencimento').textContent = new Date(dados.vencimento).toLocaleDateString('pt-BR');
   }
-  document.getElementById('cupom-loja-nome').textContent = '🌿 '+(dados.loja||'PDV Sacolão');
+  document.getElementById('cupom-loja-nome').textContent = '🧾 Consumidor Final';
   document.getElementById('cupom-data-hora').textContent = new Date().toLocaleString('pt-BR');
   ouvirDados(); renderCarrinho();
   document.addEventListener('keydown', e=>{
