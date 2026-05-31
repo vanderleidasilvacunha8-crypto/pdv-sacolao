@@ -315,6 +315,134 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
 .lc-filtro-btn { padding:5px 12px; border-radius:16px; border:1.5px solid var(--borda); background:var(--branco); font-family:'Quicksand',sans-serif; font-size:11px; font-weight:700; color:var(--cinza); cursor:pointer; transition:all 0.15s; }
 .lc-filtro-btn.sel { background:var(--verde); color:white; border-color:var(--verde); }
 
+
+/* === PDV MOBILE RESPONSIVO === */
+
+/* No mobile: layout em coluna unica */
+@media (max-width: 767px) {
+  #pag-vender { padding: 0 !important; }
+
+  /* Wrapper principal vira coluna */
+  .pdv-mobile-wrap {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 90px);
+    overflow: hidden;
+  }
+
+  /* Esconde cupom ao vivo no mobile */
+  .pdv-cupom-mobile { display: none !important; }
+
+  /* Coluna esquerda ocupa tudo */
+  .pdv-col-esq {
+    flex: 1 !important;
+    border-right: none !important;
+    overflow-y: auto;
+  }
+
+  /* Barra de total fixa no rodape mobile */
+  .pdv-total-bar {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #991b1b;
+    border-top: 2px solid rgba(255,255,255,0.15);
+    flex-shrink: 0;
+  }
+
+  .pdv-total-bar-info { display: flex; flex-direction: column; }
+  .pdv-total-bar-label { font-size: 10px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.5px; }
+  .pdv-total-bar-itens { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 1px; }
+  .pdv-total-bar-val {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 900;
+    color: white;
+    flex: 1;
+    text-align: center;
+  }
+  .pdv-total-bar-btn {
+    background: #16a34a;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: white;
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .pdv-total-bar-btn:active { transform: scale(0.95); }
+
+  /* Qtd area mais compacta no mobile */
+  .pdv-qty-area-mobile {
+    padding: 10px !important;
+  }
+
+  /* Atalhos de peso em grid 3 colunas no mobile */
+  #pdv-atalhos {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  #pdv-atalhos .btn-outline {
+    padding: 9px 4px !important;
+    font-size: 12px !important;
+    text-align: center;
+  }
+}
+
+/* No PC: manter layout original, esconder barra mobile */
+@media (min-width: 768px) {
+  .pdv-total-bar { display: none !important; }
+  .pdv-col-esq { border-right: 3px solid #b91c1c; }
+}
+
+
+/* === MOBILE GERAL === */
+@media (max-width: 767px) {
+
+  /* Header com abas — garantir scroll horizontal suave */
+  .nav-tabs { -webkit-overflow-scrolling: touch; }
+
+  /* Stats na home — duas colunas mais compactas */
+  .stats-grid { gap: 8px; }
+  .stat-card { padding: 12px; }
+  .stat-num, .stat-valor { font-size: 18px; }
+
+  /* Cards mais compactos */
+  .card { padding: 14px; margin-bottom: 10px; }
+  .card-titulo { font-size: 15px; margin-bottom: 12px; }
+
+  /* Modal mais largo */
+  .modal { padding: 20px 16px 32px; }
+  .modal-titulo { font-size: 18px; }
+
+  /* Botões um pouco menores */
+  .btn { padding: 12px; font-size: 14px; }
+
+  /* Fiado lista */
+  .fiado-acoes { gap: 6px; }
+
+  /* Tabela do admin scroll horizontal */
+  .cliente-card { padding: 12px; }
+
+  /* Texto de instrucao no PDV menor */
+  #pag-vender .instrucao-pdv { font-size: 10px; }
+
+  /* Atalhos de qtd — tamanho mobile */
+  .btn-outline.btn-sm { padding: 7px 10px; font-size: 11px; }
+}
+
+/* Toque mais suave em todos botoes */
+@media (hover: none) {
+  .btn:hover, .btn-icon:hover, .pv-item:hover { transform: none; }
+  .btn:active { transform: scale(0.96); }
+  .pv-item:active { transform: scale(0.98); background: var(--verde-s); }
+}
+
 </style>
 </head>
 <body>
@@ -428,8 +556,8 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
 
   <!-- VENDER -->
   <div class="pagina" id="pag-vender" style="padding:0">
-    <div style="display:flex;height:calc(100vh - 90px);overflow:hidden">
-      <div style="flex:1;display:flex;flex-direction:column;padding:12px;overflow-y:auto;border-right:3px solid #b91c1c;background:var(--creme)">
+    <div style="display:flex;height:calc(100vh - 90px);overflow:hidden" class="pdv-mobile-wrap">
+      <div style="flex:1;display:flex;flex-direction:column;padding:12px;overflow-y:auto;border-right:3px solid #b91c1c;background:var(--creme)" class="pdv-col-esq">
         <div style="background:var(--verde);border-radius:var(--radius);padding:12px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
           <div>
             <div style="color:var(--amarelo);font-family:'Fraunces',serif;font-size:16px;font-weight:900">🛒 CAIXA</div>
@@ -487,7 +615,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
         <div style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase;margin-bottom:8px">📦 Produtos</div>
         <div id="lista-produtos-venda" style="flex:1"></div>
       </div>
-      <div style="flex:1;display:flex;flex-direction:column;background:#b91c1c;overflow:hidden">
+      <div style="flex:1;display:flex;flex-direction:column;background:#b91c1c;overflow:hidden" class="pdv-cupom-mobile">
         <div style="padding:14px 18px;background:#991b1b;border-bottom:1px solid rgba(0,0,0,0.2)">
           <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:#fff;text-align:center" id="cupom-loja-nome">🌿 PDV Sacolão</div>
           <div style="font-size:11px;color:rgba(255,255,255,0.55);text-align:center;margin-top:2px" id="cupom-data-hora"></div>
@@ -523,6 +651,17 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
         </div>
       </div>
     </div>
+      <!-- BARRA TOTAL MOBILE (so aparece em celular) -->
+      <div class="pdv-total-bar">
+        <div class="pdv-total-bar-info">
+          <div class="pdv-total-bar-label">Total a pagar</div>
+          <div class="pdv-total-bar-itens"><span id="m-qtd-itens">0</span> item(s)</div>
+        </div>
+        <div class="pdv-total-bar-val" id="m-total">R$ 0,00</div>
+        <button class="pdv-total-bar-btn" onclick="abrirModalPagamento()">
+          ✅ PAGAR
+        </button>
+      </div>
   </div>
 
   <!-- PRODUTOS -->
@@ -1450,6 +1589,8 @@ function renderCarrinho(){
   const descontoVal=subtotal*descGeral/100 + carrinho.reduce((s,c)=>s+(c.preco-c.precoUnit)*c.qty,0);
   const totalFinal=carrinho.reduce((s,c)=>s+c.precoUnit*c.qty,0)*(1-descGeral/100);
   document.getElementById('pdv-qtd-itens').textContent=carrinho.length;
+  const mQtd=document.getElementById('m-qtd-itens'); if(mQtd) mQtd.textContent=carrinho.length;
+  const mTot=document.getElementById('m-total'); if(mTot) mTot.textContent=fmt(totalFinal);
   document.getElementById('cupom-subtotal').textContent=fmt(subtotal);
   document.getElementById('cupom-desc-total').textContent='- '+fmt(descontoVal);
   document.getElementById('cupom-total').textContent=fmt(totalFinal);
