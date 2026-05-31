@@ -620,6 +620,25 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
 .rev-total-label { color:rgba(255,255,255,0.7);font-size:12px;font-weight:600; }
 .rev-total-val { font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--amarelo); }
 
+
+/* Botões +/- da quantidade */
+#btn-qty-menos, #btn-qty-mais {
+  transition: background 0.1s;
+}
+#btn-qty-menos:active, #btn-qty-mais:active {
+  background: rgba(255,255,255,0.2) !important;
+}
+@media (max-width: 767px) {
+  #btn-qty-menos, #btn-qty-mais {
+    width: 52px !important;
+    height: 56px !important;
+    font-size: 28px !important;
+  }
+  #pdv-qty-input {
+    font-size: 26px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -767,19 +786,26 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
               <div style="font-size:12px;color:rgba(255,255,255,0.65)" id="pdv-sel-preco">R$ 0,00 / kg</div>
             </div>
           </div>
-          <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
-            <div style="flex:1">
-              <div style="font-size:10px;color:rgba(255,255,255,0.65);font-weight:600;text-transform:uppercase;margin-bottom:3px" id="pdv-qty-label">Quantidade</div>
-              <input type="text" inputmode="decimal" id="pdv-qty-input" placeholder="1" autocomplete="off"
-                style="width:100%;padding:12px;border-radius:8px;border:none;font-size:20px;font-weight:900;text-align:center;outline:none;color:var(--verde)"
-                onkeydown="if(event.key==='Enter'){event.preventDefault();pdvAddAoCarrinho();}"
-                oninput="pdvAtualizarTotal()"
-                onfocus="this.select()"
-                onblur="pdvAtualizarTotal()">
-            </div>
-            <div style="text-align:center;background:rgba(0,0,0,0.25);border-radius:10px;padding:10px 14px">
-              <div style="color:rgba(255,255,255,0.55);font-size:10px">TOTAL</div>
-              <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--amarelo)" id="pdv-total-prev">R$ 0,00</div>
+          <div style="margin-bottom:10px">
+            <div style="font-size:10px;color:rgba(255,255,255,0.65);font-weight:600;text-transform:uppercase;margin-bottom:6px" id="pdv-qty-label">Quantidade</div>
+            <!-- linha: - input + | total -->
+            <div style="display:flex;gap:8px;align-items:center">
+              <!-- controles - input + -->
+              <div style="flex:1;display:flex;align-items:center;background:rgba(0,0,0,0.25);border-radius:10px;overflow:hidden">
+                <button onclick="pdvQtyMenos()" ontouchstart="" style="width:48px;height:52px;border:none;background:transparent;color:white;font-size:26px;font-weight:900;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent" id="btn-qty-menos">−</button>
+                <input type="text" inputmode="decimal" id="pdv-qty-input" placeholder="1" autocomplete="off"
+                  style="flex:1;padding:8px 4px;border:none;background:transparent;font-size:22px;font-weight:900;text-align:center;outline:none;color:white;min-width:0"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();fecharTecladoEAdicionar();}"
+                  oninput="pdvAtualizarTotal();agendarFechamentoTeclado()"
+                  onfocus="this.select()"
+                  onblur="pdvAtualizarTotal()">
+                <button onclick="pdvQtyMais()" ontouchstart="" style="width:48px;height:52px;border:none;background:transparent;color:white;font-size:26px;font-weight:900;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent" id="btn-qty-mais">+</button>
+              </div>
+              <!-- total -->
+              <div style="text-align:center;background:rgba(0,0,0,0.25);border-radius:10px;padding:8px 12px;flex-shrink:0">
+                <div style="color:rgba(255,255,255,0.55);font-size:10px">TOTAL</div>
+                <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--amarelo)" id="pdv-total-prev">R$ 0,00</div>
+              </div>
             </div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
@@ -791,7 +817,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="pdv-atalhos"></div>
           <div style="display:flex;gap:8px">
-            <button onclick="if(window.innerWidth<768)document.activeElement?.blur();setTimeout(()=>pdvAddAoCarrinho(),50)" style="flex:2;padding:14px;border-radius:var(--radius-sm);border:none;background:var(--amarelo);color:var(--verde);font-weight:700;font-size:15px;cursor:pointer;transition:transform 0.1s" ontouchstart="this.style.transform='scale(0.96)'" ontouchend="this.style.transform='scale(1)'">✅ Adicionar</button>
+            <button onclick="fecharTecladoEAdicionar()" style="flex:2;padding:14px;border-radius:var(--radius-sm);border:none;background:var(--amarelo);color:var(--verde);font-weight:700;font-size:15px;cursor:pointer;transition:transform 0.1s" ontouchstart="this.style.transform='scale(0.96)'" ontouchend="this.style.transform='scale(1)'">✅ Adicionar</button>
             <button onclick="pdvCancelar()" style="flex:1;padding:14px;border-radius:var(--radius-sm);border:1.5px solid rgba(255,255,255,0.3);background:transparent;color:white;font-size:13px;cursor:pointer">✕ Cancelar</button>
           </div>
         </div>
@@ -2573,6 +2599,49 @@ function revExcluirItem(idx){
   } else {
     renderRevisao();
   }
+}
+
+
+// Botao menos na area de quantidade
+function pdvQtyMenos(){
+  const inp = document.getElementById('pdv-qty-input');
+  if(!pdvProdSel) return;
+  const isPeso = ['kg','litro'].includes(pdvProdSel.unidade);
+  const passo = isPeso ? 250 : 1;
+  const val = parseFloat((inp.value||'0').replace(',','.')) || 0;
+  const novo = Math.max(isPeso ? 250 : 1, val - passo);
+  inp.value = novo;
+  pdvAtualizarTotal();
+  inp.blur(); // fecha teclado
+}
+
+// Botao mais na area de quantidade
+function pdvQtyMais(){
+  const inp = document.getElementById('pdv-qty-input');
+  if(!pdvProdSel) return;
+  const isPeso = ['kg','litro'].includes(pdvProdSel.unidade);
+  const passo = isPeso ? 250 : 1;
+  const val = parseFloat((inp.value||'0').replace(',','.')) || 0;
+  inp.value = val + passo;
+  pdvAtualizarTotal();
+  inp.blur(); // fecha teclado
+}
+
+// Fechar teclado e adicionar
+function fecharTecladoEAdicionar(){
+  document.activeElement?.blur();
+  setTimeout(()=>pdvAddAoCarrinho(), 80);
+}
+
+// Fechar teclado automaticamente apos parar de digitar (500ms)
+let _timerTeclado = null;
+function agendarFechamentoTeclado(){
+  clearTimeout(_timerTeclado);
+  _timerTeclado = setTimeout(()=>{
+    if(window.innerWidth < 768){
+      document.getElementById('pdv-qty-input')?.blur();
+    }
+  }, 800);
 }
 
 iniciar();
