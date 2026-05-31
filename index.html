@@ -639,6 +639,47 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
   }
 }
 
+
+/* === MODAL SENHA === */
+.senha-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(3px);
+}
+.senha-overlay.show { display:flex; }
+.senha-box {
+  background:var(--branco);border-radius:20px;padding:28px 24px;
+  width:90%;max-width:340px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+}
+.senha-icon { font-size:44px;margin-bottom:10px; }
+.senha-titulo { font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--verde);margin-bottom:6px; }
+.senha-sub { font-size:13px;color:var(--cinza);margin-bottom:18px; }
+.senha-input {
+  width:100%;padding:14px;border-radius:12px;
+  border:2px solid var(--borda);font-size:22px;font-weight:700;
+  text-align:center;letter-spacing:6px;outline:none;
+  font-family:'Fraunces',serif;color:var(--verde);
+  transition:border 0.2s;
+}
+.senha-input:focus { border-color:var(--verde-c); }
+.senha-erro { color:#e74c3c;font-size:13px;margin-top:8px;min-height:18px;font-weight:600; }
+.senha-btns { display:flex;gap:10px;margin-top:16px; }
+
+/* Inventário */
+.inv-item {
+  display:flex;align-items:center;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--borda);
+}
+.inv-item:last-child { border-bottom:none; }
+.inv-emoji { font-size:22px;width:38px;height:38px;border-radius:9px;background:var(--verde-s);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.inv-info { flex:1;min-width:0; }
+.inv-nome { font-weight:700;font-size:13px; }
+.inv-det { font-size:11px;color:var(--cinza);margin-top:2px; }
+.inv-val { text-align:right;flex-shrink:0; }
+.inv-val-venda { font-family:'Fraunces',serif;font-weight:900;font-size:14px;color:var(--verde); }
+.inv-val-custo { font-size:11px;color:var(--cinza);margin-top:2px; }
+
 </style>
 </head>
 <body>
@@ -890,15 +931,19 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
       <div class="campo"><label>Nome do produto</label><input type="text" id="prod-nome" placeholder="Ex: Banana prata"></div>
       <div class="campo"><label>Código (ex: BAN01) — opcional</label><input type="text" id="prod-cod" placeholder="Deixe vazio para gerar automaticamente" style="text-transform:uppercase"></div>
       <div style="display:flex;gap:10px">
-        <div class="campo" style="flex:1"><label>Preço (R$)</label><input type="number" id="prod-preco" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="campo" style="flex:1"><label>Preço venda (R$)</label><input type="number" id="prod-preco" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="campo" style="flex:1"><label>Custo compra (R$)</label><input type="number" id="prod-custo" placeholder="0,00" step="0.01" min="0"></div>
+      </div>
+      <div style="display:flex;gap:10px">
         <div class="campo" style="flex:1"><label>Unidade</label>
           <select id="prod-unidade" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px">
             <option value="kg">kg</option><option value="unid">unid</option><option value="maço">maço</option><option value="dúzia">dúzia</option><option value="litro">litro</option><option value="pct">pacote</option>
           </select>
         </div>
+        <div class="campo" style="flex:1"></div>
       </div>
       <div class="campo"><label>Estoque</label><input type="number" id="prod-estoque" placeholder="Ex: 50" step="0.1" min="0"></div>
-      <button class="btn btn-verde" onclick="salvarProduto()">💾 Salvar produto</button>
+      <button class="btn btn-verde" onclick="salvarProdutoComSenha()">💾 Salvar produto</button>
     </div>
     <div class="card">
       <div class="card-titulo">📦 Produtos cadastrados</div>
@@ -950,6 +995,32 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
     <div class="card">
       <div class="card-titulo">📈 Vendas — últimos 7 dias</div>
       <div class="chart-container"><canvas id="chart-semana-rel"></canvas></div>
+    </div>
+    <!-- INVENTÁRIO PROTEGIDO POR SENHA -->
+    <div class="card">
+      <div class="card-titulo" style="display:flex;justify-content:space-between;align-items:center">
+        <span>📦 Inventário de Mercadorias</span>
+        <button onclick="abrirInventario()" class="btn btn-outline btn-sm">🔐 Ver</button>
+      </div>
+      <div id="inv-bloqueado" style="text-align:center;padding:20px;color:var(--cinza)">
+        <div style="font-size:32px;margin-bottom:8px">🔒</div>
+        <div style="font-size:13px">Protegido por senha</div>
+        <div style="font-size:11px;margin-top:4px">Clique em "Ver" para acessar</div>
+      </div>
+      <div id="inv-conteudo" style="display:none">
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <div style="flex:1;background:var(--verde-s);border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:var(--cinza);font-weight:700;text-transform:uppercase">Total em venda</div>
+            <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--verde)" id="inv-total-venda">R$ 0,00</div>
+          </div>
+          <div style="flex:1;background:#fdecea;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:var(--cinza);font-weight:700;text-transform:uppercase">Total em custo</div>
+            <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#e74c3c" id="inv-total-custo">R$ 0,00</div>
+          </div>
+        </div>
+        <div id="inv-lista"></div>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px;width:100%" onclick="bloquearInventario()">🔒 Bloquear inventário</button>
+      </div>
     </div>
     <div class="card"><div class="card-titulo">🏆 Mais vendidos</div><div id="mais-vendidos"></div></div>
     <div class="card">
@@ -1047,12 +1118,16 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
     <div class="campo"><label>Nome</label><input type="text" id="ep-nome"></div>
     <div class="campo"><label>Código</label><input type="text" id="ep-cod" style="text-transform:uppercase"></div>
     <div style="display:flex;gap:10px">
-      <div class="campo" style="flex:1"><label>Preço</label><input type="number" id="ep-preco" step="0.01"></div>
+      <div class="campo" style="flex:1"><label>Preço venda</label><input type="number" id="ep-preco" step="0.01"></div>
+      <div class="campo" style="flex:1"><label>Custo compra</label><input type="number" id="ep-custo" step="0.01" placeholder="0,00"></div>
+    </div>
+    <div style="display:flex;gap:10px">
       <div class="campo" style="flex:1"><label>Unidade</label>
         <select id="ep-unidade" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--borda);font-size:14px">
           <option value="kg">kg</option><option value="unid">unid</option><option value="maço">maço</option><option value="dúzia">dúzia</option><option value="litro">litro</option><option value="pct">pacote</option>
         </select>
       </div>
+      <div class="campo" style="flex:1"></div>
     </div>
     <div class="campo"><label>Estoque</label><input type="number" id="ep-estoque" step="0.1"></div>
     <div style="display:flex;gap:8px">
@@ -1314,7 +1389,26 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
     <!-- Botões -->
     <div style="display:flex;gap:8px">
       <button class="btn btn-outline" style="flex:1" onclick="fecharModal()">← Voltar</button>
-      <button class="btn btn-verde" style="flex:2" onclick="fecharModal();abrirModalPagamento()">💳 Ir para pagamento</button>
+      <button class="btn btn-verde" style="flex:2" onclick="document.getElementById('modal-revisao').classList.remove('show');setTimeout(()=>abrirModalPagamento(),50)">💳 Ir para pagamento</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL SENHA ADMIN -->
+<div class="senha-overlay" id="modal-senha">
+  <div class="senha-box">
+    <div class="senha-icon">🔐</div>
+    <div class="senha-titulo">Área Restrita</div>
+    <div class="senha-sub" id="senha-descricao">Digite a senha para continuar</div>
+    <input type="password" id="senha-input" class="senha-input" placeholder="••••"
+      maxlength="8" inputmode="numeric"
+      onkeydown="if(event.key==='Enter')confirmarSenha()"
+      oninput="document.getElementById('senha-erro').textContent=''">
+    <div class="senha-erro" id="senha-erro"></div>
+    <div class="senha-btns">
+      <button class="btn btn-outline" style="flex:1" onclick="fecharSenha()">Cancelar</button>
+      <button class="btn btn-verde" style="flex:1" onclick="confirmarSenha()">🔓 Entrar</button>
     </div>
   </div>
 </div>
@@ -1498,7 +1592,7 @@ function renderGraficoSemana(canvasId){
   graficos[canvasId]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Vendas R$',data:dados,backgroundColor:'rgba(61,184,122,0.7)',borderColor:'#3db87a',borderWidth:2,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}}},scales:{y:{ticks:{callback:v=>fmt(v)},grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}});
 }
 
-async function salvarProduto(){
+async function salvarProdutoReal(){
   const emoji=document.getElementById('prod-emoji').value||'🥦';
   const nome=document.getElementById('prod-nome').value.trim();
   const cod=(document.getElementById('prod-cod').value.trim().toUpperCase())||gerarCod(nome);
@@ -1524,25 +1618,27 @@ function renderProdutos(filtro=''){
   const lista=document.getElementById('lista-produtos');
   const prods=Object.values(dadosUsuario.produtos||{}).filter(p=>!filtro||p.nome.toLowerCase().includes(filtro.toLowerCase())||p.cod?.toLowerCase().includes(filtro.toLowerCase()));
   if(!prods.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">📦</div><p>Nenhum produto cadastrado</p></div>'; return; }
-  lista.innerHTML=prods.map(p=>`<div class="prod-item"><div class="prod-emoji">${p.emoji}</div><div class="prod-info"><div class="prod-nome">${highlight(p.nome,filtro)} <span class="cod-badge">${p.cod||''}</span></div><div class="prod-detalhe">${fmt(p.preco)} / ${p.unidade}</div><div class="prod-estoque ${parseFloat(p.estoque)<=5?'estoque-baixo':''}">Estoque: ${p.estoque} ${p.unidade}</div></div><div class="prod-acoes"><button class="btn-icon" onclick="editarProd('${p.id}')">✏️</button><button class="btn-icon danger" onclick="excluirProd('${p.id}')">🗑️</button></div></div>`).join('');
+  lista.innerHTML=prods.map(p=>`<div class="prod-item"><div class="prod-emoji">${p.emoji}</div><div class="prod-info"><div class="prod-nome">${highlight(p.nome,filtro)} <span class="cod-badge">${p.cod||''}</span></div><div class="prod-detalhe">${fmt(p.preco)} / ${p.unidade}</div><div class="prod-estoque ${parseFloat(p.estoque)<=5?'estoque-baixo':''}">Estoque: ${p.estoque} ${p.unidade}</div></div><div class="prod-acoes"><button class="btn-icon" onclick="editarProdComSenha('${p.id}')">✏️</button><button class="btn-icon danger" onclick="excluirProdComSenha('${p.id}')">🗑️</button></div></div>`).join('');
 }
 
-function editarProd(id){
+function editarProdReal(id){
   const p=Object.values(dadosUsuario.produtos||{}).find(x=>x.id===id); if(!p) return;
   document.getElementById('ep-id').value=id; document.getElementById('ep-emoji').value=p.emoji;
   document.getElementById('ep-nome').value=p.nome; document.getElementById('ep-cod').value=p.cod||'';
-  document.getElementById('ep-preco').value=p.preco; document.getElementById('ep-unidade').value=p.unidade;
+  document.getElementById('ep-preco').value=p.preco;
+  const epCusto=document.getElementById('ep-custo'); if(epCusto) epCusto.value=p.custo||'';
+  document.getElementById('ep-unidade').value=p.unidade;
   document.getElementById('ep-estoque').value=p.estoque;
   document.getElementById('modal-prod').classList.add('show');
 }
 
 async function salvarEdicao(){
   const id=document.getElementById('ep-id').value;
-  await refUser('produtos/'+id).update({emoji:document.getElementById('ep-emoji').value,nome:document.getElementById('ep-nome').value,cod:document.getElementById('ep-cod').value.toUpperCase(),preco:parseFloat(document.getElementById('ep-preco').value),unidade:document.getElementById('ep-unidade').value,estoque:parseFloat(document.getElementById('ep-estoque').value)||0});
+  await refUser('produtos/'+id).update({emoji:document.getElementById('ep-emoji').value,nome:document.getElementById('ep-nome').value,cod:document.getElementById('ep-cod').value.toUpperCase(),preco:parseFloat(document.getElementById('ep-preco').value),custo:parseFloat(document.getElementById('ep-custo')?.value)||0,unidade:document.getElementById('ep-unidade').value,estoque:parseFloat(document.getElementById('ep-estoque').value)||0});
   fecharModal(); toast('✅ Produto atualizado!','success');
 }
 
-async function excluirProd(id){ if(!confirm('Excluir este produto?')) return; await refUser('produtos/'+id).remove(); toast('🗑️ Produto removido',''); }
+async function excluirProdReal(id){ if(!confirm('Excluir este produto?')) return; await refUser('produtos/'+id).remove(); toast('🗑️ Produto removido',''); }
 
 function exportarCSV(){
   const prods=Object.values(dadosUsuario.produtos||{});
@@ -2642,6 +2738,139 @@ function agendarFechamentoTeclado(){
       document.getElementById('pdv-qty-input')?.blur();
     }
   }, 800);
+}
+
+
+// ===== SISTEMA DE SENHA =====
+const SENHA_ADMIN = '1975';
+let _senhaCallback = null;
+let _inventarioDesbloqueado = false;
+
+function pedirSenha(descricao, callback){
+  _senhaCallback = callback;
+  document.getElementById('senha-descricao').textContent = descricao || 'Digite a senha para continuar';
+  document.getElementById('senha-input').value = '';
+  document.getElementById('senha-erro').textContent = '';
+  document.getElementById('modal-senha').classList.add('show');
+  setTimeout(()=>document.getElementById('senha-input').focus(), 150);
+}
+
+function confirmarSenha(){
+  const val = document.getElementById('senha-input').value;
+  if(val === SENHA_ADMIN){
+    document.getElementById('modal-senha').classList.remove('show');
+    document.getElementById('senha-erro').textContent = '';
+    if(_senhaCallback) _senhaCallback();
+    _senhaCallback = null;
+  } else {
+    document.getElementById('senha-erro').textContent = '❌ Senha incorreta!';
+    document.getElementById('senha-input').value = '';
+    document.getElementById('senha-input').focus();
+    // Vibrar no mobile
+    if(navigator.vibrate) navigator.vibrate([100,50,100]);
+  }
+}
+
+function fecharSenha(){
+  document.getElementById('modal-senha').classList.remove('show');
+  _senhaCallback = null;
+}
+
+// ===== CADASTRAR PRODUTO COM SENHA =====
+function salvarProdutoComSenha(){
+  pedirSenha('Senha para cadastrar produto', ()=>{
+    salvarProdutoReal();
+  });
+}
+
+// ===== EDITAR PRODUTO COM SENHA =====
+function editarProdComSenha(id){
+  pedirSenha('Senha para editar produto', ()=>{
+    editarProdReal(id);
+  });
+}
+
+// ===== EXCLUIR PRODUTO COM SENHA =====
+function excluirProdComSenha(id){
+  pedirSenha('Senha para excluir produto', ()=>{
+    excluirProdReal(id);
+  });
+}
+
+// ===== INVENTÁRIO =====
+function abrirInventario(){
+  if(_inventarioDesbloqueado){
+    renderInventario();
+    return;
+  }
+  pedirSenha('Senha para ver o inventário', ()=>{
+    _inventarioDesbloqueado = true;
+    document.getElementById('inv-bloqueado').style.display = 'none';
+    document.getElementById('inv-conteudo').style.display = 'block';
+    renderInventario();
+  });
+}
+
+function bloquearInventario(){
+  _inventarioDesbloqueado = false;
+  document.getElementById('inv-bloqueado').style.display = 'block';
+  document.getElementById('inv-conteudo').style.display = 'none';
+}
+
+function renderInventario(){
+  if(!dadosUsuario) return;
+  const prods = Object.values(dadosUsuario.produtos||{});
+  const lista = document.getElementById('inv-lista');
+  if(!lista) return;
+
+  let totalVenda = 0;
+  let totalCusto = 0;
+
+  prods.forEach(p=>{
+    const est = parseFloat(p.estoque)||0;
+    const preco = parseFloat(p.preco)||0;
+    const custo = parseFloat(p.custo)||0;
+    totalVenda += est * preco;
+    totalCusto += est * custo;
+  });
+
+  const tvEl = document.getElementById('inv-total-venda');
+  const tcEl = document.getElementById('inv-total-custo');
+  if(tvEl) tvEl.textContent = fmt(totalVenda);
+  if(tcEl) tcEl.textContent = custo>0 ? fmt(totalCusto) : fmt(totalCusto);
+
+  if(!prods.length){
+    lista.innerHTML = '<div class="empty-state"><div class="emoji">📦</div><p>Nenhum produto cadastrado</p></div>';
+    return;
+  }
+
+  // Calcular totais corretos
+  let tvTotal = 0, tcTotal = 0;
+  lista.innerHTML = prods.map(p=>{
+    const est = parseFloat(p.estoque)||0;
+    const preco = parseFloat(p.preco)||0;
+    const custo = parseFloat(p.custo)||0;
+    const valVenda = est * preco;
+    const valCusto = est * custo;
+    tvTotal += valVenda;
+    tcTotal += valCusto;
+    const margem = custo>0 ? Math.round((preco-custo)/custo*100) : null;
+    return '<div class="inv-item">'
+      +'<div class="inv-emoji">'+p.emoji+'</div>'
+      +'<div class="inv-info">'
+        +'<div class="inv-nome">'+p.nome+'</div>'
+        +'<div class="inv-det">Estoque: '+est+' '+p.unidade+' · Venda: '+fmt(preco)+(custo>0?' · Custo: '+fmt(custo):'')+(margem!==null?' · Margem: '+margem+'%':'')+'</div>'
+      +'</div>'
+      +'<div class="inv-val">'
+        +'<div class="inv-val-venda">'+fmt(valVenda)+'</div>'
+        +(custo>0?'<div class="inv-val-custo">custo: '+fmt(valCusto)+'</div>':'')
+      +'</div>'
+    +'</div>';
+  }).join('');
+
+  // Atualizar totais finais
+  if(tvEl) tvEl.textContent = fmt(tvTotal);
+  if(tcEl) tcEl.textContent = fmt(tcTotal);
 }
 
 iniciar();
