@@ -600,6 +600,26 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
   }
 }
 
+
+/* === MODAL REVISÃO DO PEDIDO === */
+.rev-item {
+  display:flex;align-items:center;gap:10px;
+  padding:11px 12px;border-radius:10px;
+  background:var(--branco);border:1px solid var(--borda);
+  margin-bottom:8px;transition:all 0.15s;
+}
+.rev-item:active { background:var(--verde-s); }
+.rev-emoji { font-size:22px;width:38px;height:38px;border-radius:9px;background:var(--verde-s);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.rev-info { flex:1;min-width:0; }
+.rev-nome { font-weight:700;font-size:13px;color:var(--texto);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.rev-det { font-size:11px;color:var(--cinza);margin-top:2px; }
+.rev-val { font-family:'Fraunces',serif;font-weight:900;font-size:16px;color:var(--verde);flex-shrink:0;text-align:right; }
+.rev-del { width:28px;height:28px;border-radius:6px;border:none;background:#fdecea;color:var(--red,#ff4444);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s; }
+.rev-del:active { background:var(--red,#ff4444);color:white; }
+.rev-total-box { background:linear-gradient(135deg,var(--verde),#1a3d28);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center; }
+.rev-total-label { color:rgba(255,255,255,0.7);font-size:12px;font-weight:600; }
+.rev-total-val { font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--amarelo); }
+
 </style>
 </head>
 <body>
@@ -715,7 +735,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
   <div class="pagina" id="pag-vender" style="padding:0">
     <div style="display:flex;height:calc(100vh - 90px);overflow:hidden" class="pdv-mobile-wrap">
       <div style="flex:1;display:flex;flex-direction:column;padding:12px;overflow-y:auto;border-right:3px solid #b91c1c;background:var(--creme)" class="pdv-col-esq">
-        <div onclick="if(carrinho.length)abrirModalPagamento();" style="background:var(--verde);border-radius:var(--radius);padding:12px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:opacity 0.15s" active="this.style.opacity=0.8">
+        <div onclick="if(carrinho.length)abrirRevisao();" style="background:var(--verde);border-radius:var(--radius);padding:12px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:opacity 0.15s" active="this.style.opacity=0.8">
           <div>
             <div style="color:var(--amarelo);font-family:'Fraunces',serif;font-size:16px;font-weight:900">🛒 CAIXA</div>
             <div style="color:rgba(255,255,255,0.6);font-size:11px" id="pdv-num-venda">Toque para finalizar</div>
@@ -799,7 +819,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
             <span style="color:rgba(255,255,255,0.65);font-size:12px">Desconto</span>
             <span style="color:#fca5a5;font-size:12px;font-weight:600" id="cupom-desc-total">- R$ 0,00</span>
           </div>
-          <button onclick="abrirModalPagamento()" id="btn-total-grande"
+          <button onclick="abrirRevisao()" id="btn-total-grande"
             style="width:100%;background:white;border:none;border-radius:var(--radius);padding:16px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;box-shadow:0 4px 16px rgba(0,0,0,0.25);cursor:pointer;transition:transform 0.15s">
             <div style="text-align:left">
               <div style="color:#b91c1c;font-weight:700;font-size:13px">💰 TOTAL A PAGAR</div>
@@ -808,7 +828,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
             <span style="font-family:'Fraunces',serif;font-size:32px;font-weight:900;color:#b91c1c" id="cupom-total">R$ 0,00</span>
           </button>
           <div style="display:flex;gap:8px">
-            <button onclick="abrirModalPagamento()" style="flex:2;padding:14px;border-radius:var(--radius-sm);border:none;background:#16a34a;color:white;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2)">✅ FINALIZAR (F4)</button>
+            <button onclick="abrirRevisao()" style="flex:2;padding:14px;border-radius:var(--radius-sm);border:none;background:#16a34a;color:white;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2)">✅ FINALIZAR (F4)</button>
             <button onclick="limparCarrinho()" style="flex:1;padding:14px;border-radius:var(--radius-sm);border:1.5px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.7);font-size:13px;cursor:pointer">🗑️ Limpar</button>
           </div>
         </div>
@@ -821,7 +841,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
           <div class="pdv-total-bar-itens"><span id="m-qtd-itens">0</span> item(s)</div>
         </div>
         <div class="pdv-total-bar-val" id="m-total">R$ 0,00</div>
-        <button class="pdv-total-bar-btn" onclick="document.activeElement?.blur();setTimeout(()=>abrirModalPagamento(),100)">
+        <button class="pdv-total-bar-btn" onclick="document.activeElement?.blur();setTimeout(()=>abrirRevisao(),100)">
           ✅ PAGAR
         </button>
       </div>
@@ -1240,6 +1260,39 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
 
 <!-- Overlay PDV mobile -->
 <div class="pdv-overlay" id="pdv-overlay" onclick="pdvCancelarMobile()"></div>
+
+<!-- MODAL REVISAO DO PEDIDO -->
+<div class="modal-overlay" id="modal-revisao" style="align-items:flex-end">
+  <div class="modal" style="border-radius:24px 24px 0 0;max-height:90vh">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-titulo" style="margin:0">🧾 Revisar Pedido</div>
+      <button onclick="fecharModal()" style="background:var(--branco);border:1.5px solid var(--borda);color:var(--cinza);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Quicksand',sans-serif">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--cinza);margin-bottom:14px">Confira os itens antes de finalizar</div>
+
+    <!-- Lista dos itens -->
+    <div id="rev-lista" style="max-height:45vh;overflow-y:auto;margin-bottom:12px"></div>
+
+    <!-- Total -->
+    <div class="rev-total-box">
+      <div>
+        <div class="rev-total-label">TOTAL A PAGAR</div>
+        <div class="rev-total-val" id="rev-total">R$ 0,00</div>
+      </div>
+      <div style="text-align:right">
+        <div style="color:rgba(255,255,255,0.6);font-size:11px" id="rev-qtd-label">0 item(s)</div>
+      </div>
+    </div>
+
+    <!-- Botões -->
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" style="flex:1" onclick="fecharModal()">← Voltar</button>
+      <button class="btn btn-verde" style="flex:2" onclick="fecharModal();abrirModalPagamento()">💳 Ir para pagamento</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1336,7 +1389,7 @@ function iniciarApp(dados, status){
   document.getElementById('cupom-data-hora').textContent = new Date().toLocaleString('pt-BR');
   ouvirDados(); renderCarrinho();
   document.addEventListener('keydown', e=>{
-    if(e.key==='F4'){ e.preventDefault(); abrirModalPagamento(); }
+    if(e.key==='F4'){ e.preventDefault(); abrirRevisao(); }
     if(e.key==='Escape'){ if(document.getElementById('modal-sucesso').classList.contains('show')){ proximaVenda(); return; } }
     navegarModalPagamento(e); navegarSucesso(e); navegarCupom(e);
   });
@@ -1480,10 +1533,110 @@ let pdvProdSel=null, pdvDropIdx=-1, pdvFiltrados=[];
 function renderProdutosVenda(filtro=''){
   const lista=document.getElementById('lista-produtos-venda');
   if(!dadosUsuario){ lista.innerHTML=''; return; }
-  const prods=Object.values(dadosUsuario.produtos||{}).filter(p=>!filtro||p.nome.toLowerCase().includes(filtro.toLowerCase())||p.cod?.toLowerCase().includes(filtro.toLowerCase()));
-  if(!Object.keys(dadosUsuario.produtos||{}).length){ lista.innerHTML='<div class="empty-state"><div class="emoji">📦</div><p>Cadastre produtos em <b>Produtos</b> primeiro</p></div>'; return; }
-  if(!prods.length){ lista.innerHTML='<div class="empty-state"><div class="emoji">🔍</div><p>Nenhum produto encontrado</p></div>'; return; }
-  lista.innerHTML=prods.map(p=>`<div class="pv-item" onclick="pdvSelecionarProd('${p.id}')"><div class="pv-esq"><span style="font-size:22px">${p.emoji}</span><div><div class="pv-nome">${p.nome} <span class="cod-badge">${p.cod||''}</span></div><div class="pv-preco">${fmt(p.preco)} / ${p.unidade}</div></div></div><button class="pv-add">+</button></div>`).join('');
+  const prods=Object.values(dadosUsuario.produtos||{})
+    .filter(p=>!filtro||p.nome.toLowerCase().includes(filtro.toLowerCase())||p.cod?.toLowerCase().includes(filtro.toLowerCase()));
+  if(!Object.keys(dadosUsuario.produtos||{}).length){
+    lista.innerHTML='<div class="empty-state"><div class="emoji">📦</div><p>Cadastre produtos em <b>Produtos</b> primeiro</p></div>'; return;
+  }
+  if(!prods.length){
+    lista.innerHTML='<div class="empty-state"><div class="emoji">🔍</div><p>Nenhum produto encontrado</p></div>'; return;
+  }
+  lista.innerHTML = prods.map(p=>{
+    const isUnit = !['kg','litro'].includes(p.unidade);
+    const qtdNoCarrinho = carrinho.filter(c=>c.id===p.id).reduce((s,c)=>s+c.qty,0);
+    const temNoCarrinho = qtdNoCarrinho > 0;
+    const cod = p.cod ? '<span class="cod-badge">'+p.cod+'</span>' : '';
+
+    if(isUnit && temNoCarrinho){
+      return '<div class="pv-item" style="border-color:var(--verde-c);background:#f0fdf4;gap:8px">'
+        +'<div class="pv-esq" onclick="pdvSelecionarProd(this.dataset.id)" data-id="'+p.id+'" style="flex:1;cursor:pointer">'
+          +'<span style="font-size:22px">'+p.emoji+'</span>'
+          +'<div><div class="pv-nome">'+p.nome+' '+cod+'</div>'
+          +'<div class="pv-preco">'+fmt(p.preco)+' / '+p.unidade+'</div></div>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
+          +'<button onclick="event.stopPropagation();pvRemoverUm(this.dataset.id)" data-id="'+p.id+'" '
+            +'style="width:34px;height:34px;border-radius:8px;border:2px solid var(--verde);background:var(--branco);color:var(--verde);font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>'
+          +'<span style="font-family:Fraunces,serif;font-size:18px;font-weight:900;color:var(--verde);min-width:24px;text-align:center">'+qtdNoCarrinho+'</span>'
+          +'<button onclick="event.stopPropagation();pvAdicionarUm(this.dataset.id)" data-id="'+p.id+'" '
+            +'style="width:34px;height:34px;border-radius:8px;border:none;background:var(--verde);color:white;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>'
+        +'</div>'
+      +'</div>';
+    }
+    return '<div class="pv-item" onclick="pdvSelecionarProd(this.dataset.id)" data-id="'+p.id+'">'
+      +'<div class="pv-esq">'
+        +'<span style="font-size:22px">'+p.emoji+'</span>'
+        +'<div><div class="pv-nome">'+p.nome+' '+cod+'</div>'
+        +'<div class="pv-preco">'+fmt(p.preco)+' / '+p.unidade+'</div></div>'
+      +'</div>'
+      +'<button onclick="event.stopPropagation();pvAdicionarUmDireto(this.dataset.id)" data-id="'+p.id+'" class="pv-add">+</button>'
+    +'</div>';
+  }).join('');
+}
+
+function pvAdicionarUmDireto(prodId){
+  const p = Object.values(dadosUsuario.produtos||{}).find(x=>x.id===prodId);
+  if(!p) return;
+  const isUnit = !['kg','litro'].includes(p.unidade);
+  if(isUnit){
+    pvAdicionarUm(prodId);
+  } else {
+    pdvSelecionarProd(prodId);
+  }
+}
+
+function pvAdicionarUm(prodId){
+  const p = Object.values(dadosUsuario.produtos||{}).find(x=>x.id===prodId);
+  if(!p) return;
+  carrinho.push({id:p.id,emoji:p.emoji,nome:p.nome,preco:p.preco,precoUnit:p.preco,descPct:0,unidade:p.unidade,qty:1,descQty:'1 '+p.unidade,total:p.preco});
+  renderCarrinho();
+  renderProdutosVenda(document.getElementById('busca-venda').value||'');
+  bip();
+}
+
+function pvRemoverUm(prodId){
+  for(let i=carrinho.length-1;i>=0;i--){
+    if(carrinho[i].id===prodId){
+      if(carrinho[i].qty > 1){
+        carrinho[i].qty -= 1;
+        carrinho[i].total = carrinho[i].precoUnit * carrinho[i].qty;
+        carrinho[i].descQty = carrinho[i].qty+' '+carrinho[i].unidade;
+      } else {
+        carrinho.splice(i,1);
+      }
+      break;
+    }
+  }
+  renderCarrinho();
+  renderProdutosVenda(document.getElementById('busca-venda').value||'');
+}
+
+function pvAdicionarUm(prodId){
+  const p = Object.values(dadosUsuario.produtos||{}).find(x=>x.id===prodId);
+  if(!p) return;
+  carrinho.push({id:p.id,emoji:p.emoji,nome:p.nome,preco:p.preco,precoUnit:p.preco,descPct:0,unidade:p.unidade,qty:1,descQty:'1 '+p.unidade,total:p.preco});
+  renderCarrinho();
+  renderProdutosVenda(document.getElementById('busca-venda').value);
+  bip();
+}
+
+// Remover 1 unidade pelo botão -
+function pvRemoverUm(prodId){
+  // Encontrar o último item desse produto no carrinho e diminuir 1
+  for(let i=carrinho.length-1;i>=0;i--){
+    if(carrinho[i].id===prodId){
+      if(carrinho[i].qty > 1){
+        carrinho[i].qty -= 1;
+        carrinho[i].total = carrinho[i].precoUnit * carrinho[i].qty;
+        carrinho[i].descQty = carrinho[i].qty+' '+carrinho[i].unidade;
+      } else {
+        carrinho.splice(i,1);
+      }
+      break;
+    }
+  }
+  renderCarrinho();
+  renderProdutosVenda(document.getElementById('busca-venda').value);
 }
 
 function autocompletePDV(){
@@ -2357,6 +2510,55 @@ function compartilharListaCompras(){
     +'(marque o checkbox [ ] ao comprar cada item)';
 
   window.open('https://wa.me/?text='+txt, '_blank');
+}
+
+
+// ===== REVISAO DO PEDIDO =====
+function abrirRevisao(){
+  if(!carrinho.length){ toast('Adicione produtos primeiro'); return; }
+  renderRevisao();
+  document.getElementById('modal-revisao').classList.add('show');
+}
+
+function renderRevisao(){
+  const lista = document.getElementById('rev-lista');
+  const totalEl = document.getElementById('rev-total');
+  const qtdEl = document.getElementById('rev-qtd-label');
+  if(!lista) return;
+
+  const total = calcTotal();
+  if(totalEl) totalEl.textContent = fmt(total);
+  if(qtdEl) qtdEl.textContent = carrinho.length+' item(s)';
+
+  if(!carrinho.length){
+    lista.innerHTML = '<div class="empty-state"><div class="emoji">🛒</div><p>Nenhum item no carrinho</p></div>';
+    return;
+  }
+
+  lista.innerHTML = carrinho.map((c,i)=>{
+    const descInfo = c.descPct>0 ? ' <span style="color:#e76f51;font-size:10px">-'+c.descPct+'%</span>' : '';
+    return '<div class="rev-item">'
+      +'<div class="rev-emoji">'+c.emoji+'</div>'
+      +'<div class="rev-info">'
+        +'<div class="rev-nome">'+c.nome+'</div>'
+        +'<div class="rev-det">'+c.descQty+' × '+fmt(c.precoUnit)+descInfo+'</div>'
+      +'</div>'
+      +'<div class="rev-val">'+fmt(c.precoUnit*c.qty)+'</div>'
+      +'<button class="rev-del" onclick="revExcluirItem('+i+')" title="Remover">✕</button>'
+    +'</div>';
+  }).join('');
+}
+
+function revExcluirItem(idx){
+  carrinho.splice(idx,1);
+  renderCarrinho();
+  renderProdutosVenda(document.getElementById('busca-venda').value||'');
+  if(carrinho.length === 0){
+    fecharModal();
+    toast('Carrinho vazio');
+  } else {
+    renderRevisao();
+  }
 }
 
 iniciar();
