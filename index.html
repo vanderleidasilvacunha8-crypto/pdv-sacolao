@@ -1517,7 +1517,10 @@ function iniciarApp(dados, status){
   ouvirDados(); renderCarrinho();
   document.addEventListener('keydown', e=>{
     if(e.key==='F4'){ e.preventDefault(); abrirRevisao(); }
-    if(e.key==='Escape'){ if(document.getElementById('modal-sucesso').classList.contains('show')){ proximaVenda(); return; } }
+    if(e.key==='Escape'){
+      if(document.getElementById('modal-sucesso').classList.contains('show')){ proximaVenda(); return; }
+      if(document.getElementById('modal-revisao').classList.contains('show')){ fecharModal(); return; }
+    }
     navegarModalPagamento(e); navegarSucesso(e); navegarCupom(e);
   });
   ACOES_CUPOM = { compartilhar:compartilharCupom, imprimir:imprimirCupom, concluir:concluirVenda };
