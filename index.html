@@ -1721,6 +1721,7 @@ function pdvAddAoCarrinho(){
   renderCarrinho(); bip();
   toast(`${pdvProdSel.emoji} ${pdvProdSel.nome} — ${descQty} → ${fmt(precoUnit*qty)}${descPct>0?' (-'+descPct+'%)':''}`, '', 1800);
   pdvCancelar();
+  renderProdutosVenda(document.getElementById('busca-venda').value||'');
   setTimeout(()=>{ document.getElementById('busca-venda').focus(); },100);
 }
 
@@ -1915,7 +1916,11 @@ function gerarTextoCupom(v){
 function proximaVenda(){
   document.getElementById('modal-sucesso').classList.remove('show');
   ultimaVenda = null;
-  setTimeout(()=>{ irPara('vender'); document.getElementById('busca-venda')?.focus(); },200);
+  setTimeout(()=>{
+    irPara('vender');
+    renderProdutosVenda('');
+    document.getElementById('busca-venda')?.focus();
+  },200);
   toast('✅ Pronto para próxima venda!','success',2000);
 }
 
@@ -1937,8 +1942,17 @@ function renderCarrinho(){
   cupomItens.scrollTop=cupomItens.scrollHeight;
 }
 
-function removerItem(i){ carrinho.splice(i,1); renderCarrinho(); }
-function limparCarrinho(){ carrinho=[]; document.getElementById('busca-venda').value=''; renderCarrinho(); }
+function removerItem(i){
+  carrinho.splice(i,1);
+  renderCarrinho();
+  renderProdutosVenda(document.getElementById('busca-venda').value||'');
+}
+function limparCarrinho(){
+  carrinho=[];
+  document.getElementById('busca-venda').value='';
+  renderCarrinho();
+  renderProdutosVenda('');
+}
 
 let cupomBtnIdx=2;
 const CUPOM_BTNS=['compartilhar','imprimir','concluir'];
