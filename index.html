@@ -568,6 +568,38 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
   #pdv-qty-input { font-size: 24px !important; }
 }
 
+
+/* === Toque no header caixa === */
+@media (max-width: 767px) {
+  #pag-vender .pdv-col-esq > div:first-child:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+
+  /* Botão adicionar: maior no mobile para tocar fácil */
+  #pag-vender .btn-amarelo-add {
+    padding: 16px !important;
+    font-size: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Instrucao PDV: ocultar no mobile */
+  #pag-vender > div > div.pdv-col-esq > div[style*="font-size:11px"] {
+    display: none;
+  }
+
+  /* Bottom sheet: garantir que botão Adicionar aparece */
+  #pdv-qty-area .btn-amarelo {
+    margin-top: 4px !important;
+  }
+
+  /* Campo busca no mobile: maior área de toque */
+  #busca-venda {
+    padding: 14px 16px !important;
+    font-size: 16px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -683,10 +715,10 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
   <div class="pagina" id="pag-vender" style="padding:0">
     <div style="display:flex;height:calc(100vh - 90px);overflow:hidden" class="pdv-mobile-wrap">
       <div style="flex:1;display:flex;flex-direction:column;padding:12px;overflow-y:auto;border-right:3px solid #b91c1c;background:var(--creme)" class="pdv-col-esq">
-        <div style="background:var(--verde);border-radius:var(--radius);padding:12px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+        <div onclick="if(carrinho.length)abrirModalPagamento();" style="background:var(--verde);border-radius:var(--radius);padding:12px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:opacity 0.15s" active="this.style.opacity=0.8">
           <div>
             <div style="color:var(--amarelo);font-family:'Fraunces',serif;font-size:16px;font-weight:900">🛒 CAIXA</div>
-            <div style="color:rgba(255,255,255,0.6);font-size:11px" id="pdv-num-venda">Venda em andamento</div>
+            <div style="color:rgba(255,255,255,0.6);font-size:11px" id="pdv-num-venda">Toque para finalizar</div>
           </div>
           <div style="text-align:right">
             <div style="color:rgba(255,255,255,0.6);font-size:10px">ITENS</div>
@@ -720,9 +752,10 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
               <div style="font-size:10px;color:rgba(255,255,255,0.65);font-weight:600;text-transform:uppercase;margin-bottom:3px" id="pdv-qty-label">Quantidade</div>
               <input type="text" inputmode="decimal" id="pdv-qty-input" placeholder="1" autocomplete="off"
                 style="width:100%;padding:12px;border-radius:8px;border:none;font-size:20px;font-weight:900;text-align:center;outline:none;color:var(--verde)"
-                onkeydown="if(event.key==='Enter'){pdvAddAoCarrinho();}"
+                onkeydown="if(event.key==='Enter'){event.preventDefault();pdvAddAoCarrinho();}"
                 oninput="pdvAtualizarTotal()"
-                onfocus="this.select()">
+                onfocus="this.select()"
+                onblur="pdvAtualizarTotal()">
             </div>
             <div style="text-align:center;background:rgba(0,0,0,0.25);border-radius:10px;padding:10px 14px">
               <div style="color:rgba(255,255,255,0.55);font-size:10px">TOTAL</div>
@@ -738,8 +771,8 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="pdv-atalhos"></div>
           <div style="display:flex;gap:8px">
-            <button onclick="pdvAddAoCarrinho()" style="flex:2;padding:12px;border-radius:var(--radius-sm);border:none;background:var(--amarelo);color:var(--verde);font-weight:700;font-size:14px;cursor:pointer">✅ Adicionar (Enter)</button>
-            <button onclick="pdvCancelar()" style="flex:1;padding:12px;border-radius:var(--radius-sm);border:1.5px solid rgba(255,255,255,0.3);background:transparent;color:white;font-size:13px;cursor:pointer">Cancelar</button>
+            <button onclick="if(window.innerWidth<768)document.activeElement?.blur();setTimeout(()=>pdvAddAoCarrinho(),50)" style="flex:2;padding:14px;border-radius:var(--radius-sm);border:none;background:var(--amarelo);color:var(--verde);font-weight:700;font-size:15px;cursor:pointer;transition:transform 0.1s" ontouchstart="this.style.transform='scale(0.96)'" ontouchend="this.style.transform='scale(1)'">✅ Adicionar</button>
+            <button onclick="pdvCancelar()" style="flex:1;padding:14px;border-radius:var(--radius-sm);border:1.5px solid rgba(255,255,255,0.3);background:transparent;color:white;font-size:13px;cursor:pointer">✕ Cancelar</button>
           </div>
         </div>
         <div style="font-size:11px;color:var(--cinza);font-weight:600;text-transform:uppercase;margin-bottom:8px">📦 Produtos</div>
@@ -788,7 +821,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
           <div class="pdv-total-bar-itens"><span id="m-qtd-itens">0</span> item(s)</div>
         </div>
         <div class="pdv-total-bar-val" id="m-total">R$ 0,00</div>
-        <button class="pdv-total-bar-btn" onclick="abrirModalPagamento()">
+        <button class="pdv-total-bar-btn" onclick="document.activeElement?.blur();setTimeout(()=>abrirModalPagamento(),100)">
           ✅ PAGAR
         </button>
       </div>
@@ -1495,7 +1528,14 @@ function pdvSelecionarProd(id){
   }
 }
 
-function pdvSetQty(v){ document.getElementById('pdv-qty-input').value=v; pdvAtualizarTotal(); document.getElementById('pdv-qty-input').focus(); }
+function pdvSetQty(v){
+  const inp = document.getElementById('pdv-qty-input');
+  inp.value = v;
+  pdvAtualizarTotal();
+  // No mobile: fechar teclado após selecionar atalho
+  if(window.innerWidth < 768){ inp.blur(); }
+  else { inp.focus(); }
+}
 
 function pdvAtualizarTotal(){
   if(!pdvProdSel) return;
@@ -1510,6 +1550,12 @@ function pdvAtualizarTotal(){
 
 function pdvAddAoCarrinho(){
   if(!pdvProdSel) return;
+  // Fechar teclado no mobile
+  if(window.innerWidth < 768){
+    const inp = document.getElementById('pdv-qty-input');
+    if(inp) inp.blur();
+    document.activeElement?.blur();
+  }
   const isPeso=['kg','litro'].includes(pdvProdSel.unidade);
   const _qv=(document.getElementById('pdv-qty-input').value||'0').replace(',','.');
   const raw=parseFloat(_qv)||0;
