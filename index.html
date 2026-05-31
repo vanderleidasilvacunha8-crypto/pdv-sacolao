@@ -680,6 +680,13 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
 .inv-val-venda { font-family:'Fraunces',serif;font-weight:900;font-size:14px;color:var(--verde); }
 .inv-val-custo { font-size:11px;color:var(--cinza);margin-top:2px; }
 
+
+/* Z-index dos modais */
+#modal-pagamento { z-index: 300 !important; }
+#modal-sucesso   { z-index: 310 !important; }
+#modal-senha     { z-index: 500 !important; }
+#modal-revisao   { z-index: 200 !important; }
+
 </style>
 </head>
 <body>
@@ -1389,7 +1396,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
     <!-- Botões -->
     <div style="display:flex;gap:8px">
       <button class="btn btn-outline" style="flex:1" onclick="fecharModal()">← Voltar</button>
-      <button class="btn btn-verde" style="flex:2" onclick="document.getElementById('modal-revisao').classList.remove('show');setTimeout(()=>abrirModalPagamento(),50)">💳 Ir para pagamento</button>
+      <button class="btn btn-verde" style="flex:2" onclick="irParaPagamento()">💳 Ir para pagamento</button>
     </div>
   </div>
 </div>
@@ -1557,7 +1564,10 @@ function irPara(pag){
   document.getElementById('pag-'+pag).classList.add('ativa');
   document.querySelectorAll('.tab-btn').forEach(b=>{ if(b.getAttribute('onclick')?.includes("'"+pag+"'")) b.classList.add('ativo'); });
   if(pag==='inicio'){ atualizarDashboard(); renderGraficoSemana('chart-semana'); }
-  if(pag==='vender') renderProdutosVenda();
+  if(pag==='vender'){
+    renderProdutosVenda();
+    setTimeout(()=>{ if(window.innerWidth>=768) document.getElementById('busca-venda')?.focus(); },150);
+  }
   if(pag==='produtos') renderProdutos();
   if(pag==='fiado') renderFiado();
   if(pag==='relatorios') renderRelatorios();
@@ -2041,7 +2051,12 @@ function proximaVenda(){
   setTimeout(()=>{
     irPara('vender');
     renderProdutosVenda('');
-    document.getElementById('busca-venda')?.focus();
+    const busca = document.getElementById('busca-venda');
+    if(busca){
+      busca.focus();
+      // Garantir foco mesmo se browser atrasar
+      setTimeout(()=>busca.focus(), 300);
+    }
   },200);
   toast('✅ Pronto para próxima venda!','success',2000);
 }
@@ -2123,8 +2138,15 @@ function imprimirCupom(){
 
 function concluirVenda(){
   fecharModal(); ultimaVenda=null;
-  setTimeout(()=>{ irPara('vender'); document.getElementById('busca-venda')?.focus(); },200);
-  toast('✅ Venda concluída! Próxima...','success',2000);
+  setTimeout(()=>{
+    irPara('vender');
+    renderProdutosVenda('');
+    if(window.innerWidth>=768){
+      const b=document.getElementById('busca-venda');
+      if(b){ b.focus(); setTimeout(()=>b.focus(),300); }
+    }
+  },200);
+  toast('✅ Venda concluída!','success',2000);
 }
 
 async function lancarFiado(tipo){
@@ -2871,6 +2893,22 @@ function renderInventario(){
   // Atualizar totais finais
   if(tvEl) tvEl.textContent = fmt(tvTotal);
   if(tcEl) tcEl.textContent = fmt(tcTotal);
+}
+
+
+function irParaPagamento(){
+  // Fechar modal de revisão completamente
+  const rev = document.getElementById('modal-revisao');
+  if(rev){
+    rev.classList.remove('show');
+    rev.style.display = 'none';
+    // Restaurar display após animação
+    setTimeout(()=>{ rev.style.display = ''; }, 400);
+  }
+  // Abrir pagamento com delay para garantir que revisão fechou
+  setTimeout(()=>{
+    abrirModalPagamento();
+  }, 120);
 }
 
 iniciar();
