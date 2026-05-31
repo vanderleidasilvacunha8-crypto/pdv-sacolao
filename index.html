@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0f2318">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -316,7 +316,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
 .lc-filtro-btn.sel { background:var(--verde); color:white; border-color:var(--verde); }
 
 
-/* === PDV MOBILE RESPONSIVO === */
+/* === PDV MOBILE RESPONSIVO - REPLACED === */
 
 /* No mobile: layout em coluna unica */
 @media (max-width: 767px) {
@@ -441,6 +441,131 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
   .btn:hover, .btn-icon:hover, .pv-item:hover { transform: none; }
   .btn:active { transform: scale(0.96); }
   .pv-item:active { transform: scale(0.98); background: var(--verde-s); }
+}
+
+
+/* === PDV MOBILE v2 === */
+@media (max-width: 767px) {
+
+  /* Wrapper: flex coluna com altura da viewport */
+  .pdv-mobile-wrap {
+    flex-direction: column !important;
+    height: calc(100dvh - 90px) !important;
+  }
+
+  /* Coluna esquerda: ocupa tudo sem border */
+  .pdv-col-esq {
+    flex: 1 !important;
+    border-right: none !important;
+    padding: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  /* Header caixa: compacto */
+  .pdv-caixa-hdr {
+    padding: 8px 12px !important;
+    border-radius: 10px !important;
+    margin-bottom: 8px !important;
+    flex-shrink: 0;
+  }
+  .pdv-caixa-hdr .caixa-title { font-size: 14px !important; }
+  .pdv-caixa-hdr .caixa-badge { font-size: 16px !important; }
+
+  /* Instrução: ocultar no mobile */
+  .pdv-instrucao { display: none !important; }
+
+  /* Label PRODUTOS: menor */
+  .pdv-label-prods { font-size: 10px !important; margin-bottom: 6px !important; }
+
+  /* Lista de produtos: scroll flex */
+  #lista-produtos-venda { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Items da lista: mais compactos */
+  .pv-item { padding: 8px 10px !important; margin-bottom: 5px !important; }
+  .pv-emoji { font-size: 20px !important; width: 34px !important; height: 34px !important; }
+  .pv-nome { font-size: 13px !important; }
+  .pv-preco { font-size: 11px !important; }
+
+  /* Área de qtd: bottom sheet fixo no mobile */
+  #pdv-qty-area {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 150 !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 12px 14px 20px !important;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.3) !important;
+    margin: 0 !important;
+    max-height: 85dvh !important;
+    overflow-y: auto !important;
+  }
+
+  /* Barra total mobile */
+  .pdv-total-bar {
+    display: flex !important;
+    position: relative !important;
+    flex-shrink: 0 !important;
+    padding: 10px 12px !important;
+  }
+
+  /* Cupom ao vivo: esconder */
+  .pdv-cupom-mobile { display: none !important; }
+
+  /* Busca no mobile: sem placeholder longo */
+  #busca-venda { font-size: 14px !important; }
+
+  /* Overlay quando qty area aberta */
+  .pdv-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 140;
+  }
+  .pdv-overlay.show { display: block; }
+
+  /* Atalhos em grid */
+  #pdv-atalhos {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 6px !important;
+    margin-bottom: 8px !important;
+  }
+  #pdv-atalhos .btn-outline { padding: 8px 4px !important; font-size: 12px !important; }
+
+  /* Handle do bottom sheet */
+  .pdv-qty-handle {
+    width: 36px; height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    margin: 0 auto 10px;
+  }
+}
+
+@media (min-width: 768px) {
+  .pdv-total-bar { display: none !important; }
+  .pdv-overlay { display: none !important; }
+  .pdv-qty-handle { display: none; }
+}
+
+
+/* === iOS/Android: evitar zoom nos inputs === */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    font-size: 16px !important;
+  }
+  /* Campo de busca PDV */
+  #busca-venda { font-size: 16px !important; }
+  /* Campo quantidade */
+  #pdv-qty-input { font-size: 24px !important; }
 }
 
 </style>
@@ -570,8 +695,11 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
         </div>
         <div style="position:relative;margin-bottom:8px">
           <input type="text" id="busca-venda"
-            placeholder="🔍 Produto ou código... (↑↓ navegar)"
+            placeholder="🔍 Buscar produto..."
             autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
             style="width:100%;padding:13px 16px;border-radius:var(--radius-sm);border:2px solid var(--verde-c);background:var(--branco);font-size:15px;outline:none;font-family:'Outfit',sans-serif;box-shadow:0 2px 12px rgba(61,184,122,0.2)"
             oninput="autocompletePDV()"
             onkeydown="teclaBusca(event)">
@@ -579,6 +707,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
         </div>
         <div style="font-size:11px;color:var(--cinza);text-align:center;margin-bottom:10px">⌨️ <b>↑↓</b> navegar · <b>Enter</b> confirmar · campo vazio+Enter = finalizar · <b>F4</b> finalizar</div>
         <div id="pdv-qty-area" style="display:none;background:linear-gradient(135deg,var(--verde),#1f5c38);border-radius:var(--radius);padding:15px;margin-bottom:10px">
+          <div class="pdv-qty-handle"></div>
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
             <span style="font-size:32px;background:rgba(255,255,255,0.15);border-radius:10px;padding:6px 10px" id="pdv-sel-emoji">🥦</span>
             <div>
@@ -589,10 +718,11 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
           <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
             <div style="flex:1">
               <div style="font-size:10px;color:rgba(255,255,255,0.65);font-weight:600;text-transform:uppercase;margin-bottom:3px" id="pdv-qty-label">Quantidade</div>
-              <input type="number" id="pdv-qty-input" placeholder="1" min="0.01" step="0.1"
+              <input type="text" inputmode="decimal" id="pdv-qty-input" placeholder="1" autocomplete="off"
                 style="width:100%;padding:12px;border-radius:8px;border:none;font-size:20px;font-weight:900;text-align:center;outline:none;color:var(--verde)"
                 onkeydown="if(event.key==='Enter'){pdvAddAoCarrinho();}"
-                oninput="pdvAtualizarTotal()">
+                oninput="pdvAtualizarTotal()"
+                onfocus="this.select()">
             </div>
             <div style="text-align:center;background:rgba(0,0,0,0.25);border-radius:10px;padding:10px 14px">
               <div style="color:rgba(255,255,255,0.55);font-size:10px">TOTAL</div>
@@ -1074,6 +1204,9 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
   </div>
 </div>
 
+
+<!-- Overlay PDV mobile -->
+<div class="pdv-overlay" id="pdv-overlay" onclick="pdvCancelarMobile()"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1354,10 +1487,12 @@ function pdvSelecionarProd(id){
   const atalhos=isPeso?[['250g',250],['500g',500],['1kg',1000],['1,5kg',1500],['2kg',2000]]:[['1',1],['2',2],['3',3],['5',5],['10',10]];
   document.getElementById('pdv-atalhos').innerHTML=atalhos.map(([l,v])=>`<button onclick="pdvSetQty(${v})" class="btn btn-outline btn-sm">${l}</button>`).join('');
   const input=document.getElementById('pdv-qty-input');
-  input.value=isPeso?'1000':'1'; input.step=isPeso?'50':'1'; input.min=isPeso?'1':'0.01';
+  input.value=isPeso?'1000':'1';
   document.getElementById('pdv-desc-item').value='0'; pdvAtualizarTotal();
   document.getElementById('pdv-qty-area').style.display='block';
-  setTimeout(()=>{ input.focus(); input.select(); },80);
+  if(window.innerWidth >= 768){
+    setTimeout(()=>{ input.focus(); input.select(); },80);
+  }
 }
 
 function pdvSetQty(v){ document.getElementById('pdv-qty-input').value=v; pdvAtualizarTotal(); document.getElementById('pdv-qty-input').focus(); }
@@ -1365,7 +1500,8 @@ function pdvSetQty(v){ document.getElementById('pdv-qty-input').value=v; pdvAtua
 function pdvAtualizarTotal(){
   if(!pdvProdSel) return;
   const isPeso=['kg','litro'].includes(pdvProdSel.unidade);
-  const raw=parseFloat(document.getElementById('pdv-qty-input').value)||0;
+  const rawStr=(document.getElementById('pdv-qty-input').value||'0').replace(',','.');
+  const raw=parseFloat(rawStr)||0;
   const qty=isPeso?raw/1000:raw;
   const descPct=Math.min(100,Math.max(0,parseFloat(document.getElementById('pdv-desc-item').value)||0));
   const total=pdvProdSel.preco*qty*(1-descPct/100);
@@ -1375,7 +1511,8 @@ function pdvAtualizarTotal(){
 function pdvAddAoCarrinho(){
   if(!pdvProdSel) return;
   const isPeso=['kg','litro'].includes(pdvProdSel.unidade);
-  const raw=parseFloat(document.getElementById('pdv-qty-input').value)||0;
+  const _qv=(document.getElementById('pdv-qty-input').value||'0').replace(',','.');
+  const raw=parseFloat(_qv)||0;
   if(raw<=0){ toast('⚠️ Informe a quantidade',''); return; }
   const qty=isPeso?raw/1000:raw;
   const descPct=Math.min(100,Math.max(0,parseFloat(document.getElementById('pdv-desc-item').value)||0));
