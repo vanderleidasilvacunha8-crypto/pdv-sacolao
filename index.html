@@ -929,7 +929,7 @@ mark{background:rgba(244,196,48,0.4);color:inherit;border-radius:3px;padding:0 2
     <!-- Ações -->
     <div style="display:flex;gap:8px;margin-bottom:8px">
       <button class="btn btn-verde" style="flex:2" onclick="imprimirListaCompras()">🖨️ Imprimir lista A4</button>
-      <button class="btn btn-outline" style="flex:1" onclick="compartilharListaCompras()">📤 WhatsApp</button>
+      <button class="btn btn-outline" style="flex:1;color:#25d366;border-color:#25d366" onclick="compartilharListaCompras()">💬 WhatsApp</button>
     </div>
     <button class="btn btn-outline" onclick="fecharModal()">Fechar</button>
   </div>
@@ -1895,16 +1895,17 @@ function renderListaCompras(){
   lista.innerHTML = prods.map((p,idx)=>{
     const est = parseFloat(p.estoque);
     const st = lcGetStatus(est);
-    return '<div class="lc-item '+st.cls+'">'
-      +'<div class="lc-emoji">'+p.emoji+'</div>'
-      +'<div class="lc-info">'
-        +'<div class="lc-nome">'+(idx+1)+'. '+p.nome+'</div>'
-        +'<div class="lc-det">'+fmt(p.preco)+' / '+p.unidade+'</div>'
-        +'<span class="lc-status '+st.cls+'">'+st.icon+' '+st.label+'</span>'
+    const corBorda = est===0?'#ffcdd2':est<=2?'#ffe0b2':'#fff9c4';
+    const corTexto = est===0?'#b71c1c':est<=2?'#e65100':'#f57f17';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;border-left:4px solid '+corBorda+';background:#fafafa;margin-bottom:6px">'
+      +'<span style="font-size:20px;flex-shrink:0">'+p.emoji+'</span>'
+      +'<div style="flex:1;min-width:0">'
+        +'<span style="font-weight:700;font-size:13px;color:#1a1a1a">'+(idx+1)+'. '+p.nome+'</span>'
+        +'<span style="font-size:11px;color:'+corTexto+';font-weight:700;margin-left:6px">'+st.icon+' '+st.label+'</span>'
       +'</div>'
-      +'<div class="lc-qtd">'
-        +'<div class="lc-qtd-num '+st.cls+'">'+est+'</div>'
-        +'<div class="lc-qtd-label">'+p.unidade+'</div>'
+      +'<div style="text-align:right;flex-shrink:0">'
+        +'<div style="font-family:Fraunces,serif;font-size:18px;font-weight:900;color:'+corTexto+'">'+est+'</div>'
+        +'<div style="font-size:9px;color:#999">'+p.unidade+'</div>'
       +'</div>'
     +'</div>';
   }).join('');
@@ -2014,26 +2015,24 @@ function compartilharListaCompras(){
   const prods = Object.values(dadosUsuario?.produtos||{})
     .filter(p=>parseFloat(p.estoque)<=5)
     .sort((a,b)=>parseFloat(a.estoque)-parseFloat(b.estoque));
-  if(!prods.length){ toast('⚠️ Nenhum produto'); return; }
+  if(!prods.length){ toast('Nenhum produto para enviar'); return; }
   const loja = dadosUsuario?.loja||'Minha Loja';
-  const semEstoque = prods.filter(p=>parseFloat(p.estoque)===0).length;
 
   const linhas = prods.map((p,i)=>{
     const est = parseFloat(p.estoque);
-    const icone = est===0?'🚫':est<=1?'🔴':est<=3?'🟡':'🟠';
-    return (i+1)+'. '+p.emoji+' *'+p.nome+'* — '+icone+' Estoque: *'+est+' '+p.unidade+'*';
+    const status = est===0?'[SEM ESTOQUE]':est<=1?'[CRITICO - '+est+' '+p.unidade+']':'['+est+' '+p.unidade+']';
+    return '[ ] '+(i+1)+'. '+p.nome+' '+status;
   });
 
-  const txt = '🛒 *Lista de Compras — '+loja+'*\n'
-    +'📅 '+hoje()+'\n'
-    +'─'.repeat(28)+'\n'
-    +linhas.join('\n')+'\n'
-    +'─'.repeat(28)+'\n'
-    +(semEstoque>0?'🚫 '+semEstoque+' produto(s) SEM estoque!\n':'')
-    +'_Total: '+prods.length+' item(s) para repor_';
+  const txt = 'Lista de Compras - '+loja+'%0A'
+    +'Data: '+hoje()+'%0A'
+    +'-----------------------------%0A'
+    +linhas.join('%0A')+'%0A'
+    +'-----------------------------%0A'
+    +'Total: '+prods.length+' produto(s) para comprar%0A'
+    +'(marque o checkbox [ ] ao comprar cada item)';
 
-  if(navigator.share) navigator.share({title:'Lista de Compras',text:txt}).catch(()=>copiarTxt(txt));
-  else copiarTxt(txt);
+  window.open('https://wa.me/?text='+txt, '_blank');
 }
 
 iniciar();
