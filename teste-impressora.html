@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste KA-7048 — Bluetooth</title>
+<style>
+  :root{
+    --ink:#0f1b14;
+    --paper:#f6f7f4;
+    --green:#1c8a4e;
+    --green-dark:#136138;
+    --amber:#e0a73b;
+    --red:#c0392b;
+    --line:#d8ddd6;
+    --tape:#11171a;
+    --tape-text:#cfe8d8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:20px 16px 60px;}
+  header h1{font-size:20px;margin:0 0 2px;}
+  header p{margin:0;color:#5a6b5f;font-size:13px;}
+  .status{
+    margin:18px 0;padding:12px 14px;border-radius:10px;
+    background:#fff;border:1px solid var(--line);
+    font-weight:600;font-size:14px;display:flex;align-items:center;gap:10px;
+  }
+  .dot{width:11px;height:11px;border-radius:50%;background:#9aa69d;flex:none;}
+  .dot.on{background:var(--green);box-shadow:0 0 0 4px rgba(28,138,78,.18);}
+  .dot.busy{background:var(--amber);}
+  .dot.err{background:var(--red);}
+  .steps{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+  button{
+    appearance:none;border:0;border-radius:10px;padding:15px 16px;
+    font-size:15px;font-weight:700;color:#fff;background:var(--green);
+    cursor:pointer;width:100%;text-align:left;
+    display:flex;align-items:center;gap:10px;transition:background .15s,transform .05s;
+  }
+  button .n{
+    background:rgba(255,255,255,.22);width:24px;height:24px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none;
+  }
+  button:hover{background:var(--green-dark);}
+  button:active{transform:translateY(1px);}
+  button:disabled{background:#b9c2bb;cursor:not-allowed;}
+  button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);}
+  button.ghost:hover{background:#eef1ec;}
+  button.ghost .n{background:#eef1ec;color:var(--ink);}
+  .hint{font-size:12.5px;color:#5a6b5f;margin:-4px 2px 0;}
+  .tape-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#5a6b5f;margin:8px 2px 6px;}
+  #log{
+    background:var(--tape);color:var(--tape-text);border-radius:10px;
+    padding:14px;min-height:160px;max-height:340px;overflow:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px;white-space:pre-wrap;word-break:break-word;
+  }
+  #log .ok{color:#7ee2a8;}
+  #log .warn{color:#f0c86a;}
+  #log .err{color:#ff8b7a;}
+  #log .uuid{color:#9ec9ff;}
+  .copy{margin-top:8px;}
+  .copy button{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:600;font-size:13px;padding:10px 12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Teste de impressora KA-7048</h1>
+    <p>Conexão Bluetooth direta pelo navegador (Web Bluetooth)</p>
+  </header>
+
+  <div class="status" id="status">
+    <span class="dot" id="dot"></span>
+    <span id="statusText">Pronto. Ligue a impressora e clique em Conectar.</span>
+  </div>
+
+  <div class="steps">
+    <button id="btnConnect"><span class="n">1</span> Conectar impressora</button>
+    <p class="hint">Acorde a impressora (aperte FEED) e desligue o Bluetooth do celular antes.</p>
+
+    <button id="btnPrint" class="ghost" disabled><span class="n">2</span> Imprimir teste</button>
+  </div>
+
+  <div class="tape-label">Registro</div>
+  <div id="log"></div>
+  <div class="copy"><button id="btnCopy">Copiar registro</button></div>
+</div>
+
+<script>
+const CANDIDATE_SERVICES = [
+  0x18f0, 0xff00, 0xff10, 0xffe0, 0xfff0, 0xae00, 0xfee7, 0xff12,
+  '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+  'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+  '0000ff00-0000-1000-8000-00805f9b34fb'
+];
+
+let device = null, server = null, printChar = null;
+
+const dot = document.getElementById('dot');
+const statusText = document.getElementById('statusText');
+const logEl = document.getElementById('log');
+const btnConnect = document.getElementById('btnConnect');
+const btnPrint = document.getElementById('btnPrint');
+const btnCopy = document.getElementById('btnCopy');
+
+function setStatus(text, kind){
+  statusText.textContent = text;
+  dot.className = 'dot' + (kind ? ' ' + kind : '');
+}
+function log(msg, cls){
+  const span = document.createElement('span');
+  if(cls) span.className = cls;
+  span.textContent = msg + '\n';
+  logEl.appendChild(span);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+if(!('bluetooth' in navigator)){
+  setStatus('Este navegador não tem Web Bluetooth. Use o Chrome.', 'err');
+  log('ERRO: navigator.bluetooth indisponível. Abra no Google Chrome, em uma página https.', 'err');
+  btnConnect.disabled = true;
+}
+
+btnConnect.addEventListener('click', async () => {
+  try{
+    setStatus('Procurando dispositivos…', 'busy');
+    log('Abrindo seletor de Bluetooth…');
+    device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: CANDIDATE_SERVICES
+    });
+    log('Selecionado: ' + (device.name || '(sem nome)') + '  id=' + device.id);
+
+    device.addEventListener('gattserverdisconnected', () => {
+      setStatus('Impressora desconectou.', 'err');
+      log('Impressora desconectou.', 'warn');
+      printChar = null; btnPrint.disabled = true;
+    });
+
+    setStatus('Conectando…', 'busy');
+    server = await device.gatt.connect();
+    log('GATT conectado. Lendo serviços…', 'ok');
+
+    const services = await server.getPrimaryServices();
+    log('Serviços encontrados: ' + services.length);
+
+    for(const s of services){
+      log('• serviço ' + short(s.uuid), 'uuid');
+      let chars = [];
+      try { chars = await s.getCharacteristics(); } catch(e){ log('   (sem acesso às características)', 'warn'); continue; }
+      for(const c of chars){
+        const p = c.properties;
+        const flags = [
+          p.write && 'write',
+          p.writeWithoutResponse && 'writeNR',
+          p.read && 'read',
+          p.notify && 'notify'
+        ].filter(Boolean).join(',');
+        log('   - char ' + short(c.uuid) + '  [' + flags + ']');
+        if(!printChar && (p.write || p.writeWithoutResponse)){
+          printChar = c;
+          log('     -> ESSA sera usada para imprimir', 'ok');
+        }
+      }
+    }
+
+    if(printChar){
+      setStatus('Conectado! Pronto para imprimir.', 'on');
+      log('OK: característica de escrita encontrada.', 'ok');
+      log('>> serviço:  ' + printChar.service.uuid, 'uuid');
+      log('>> escrita:  ' + printChar.uuid, 'uuid');
+      btnPrint.disabled = false;
+    } else {
+      setStatus('Conectou, mas não achei canal de escrita.', 'err');
+      log('Nenhuma característica gravável nos serviços conhecidos. Me mande este registro.', 'warn');
+    }
+  }catch(err){
+    setStatus('Falhou: ' + err.message, 'err');
+    log('ERRO: ' + err.message, 'err');
+    if(String(err).includes('cancelled')) log('(Você fechou o seletor — pode tentar de novo.)', 'warn');
+  }
+});
+
+btnPrint.addEventListener('click', async () => {
+  if(!printChar){ return; }
+  try{
+    setStatus('Imprimindo…', 'busy');
+    const data = buildTest();
+    await writeChunks(printChar, data);
+    setStatus('Enviado! Veja se o papel saiu.', 'on');
+    log('Cupom de teste enviado (' + data.length + ' bytes).', 'ok');
+  }catch(err){
+    setStatus('Erro ao imprimir: ' + err.message, 'err');
+    log('ERRO impressão: ' + err.message, 'err');
+  }
+});
+
+btnCopy.addEventListener('click', async () => {
+  try{ await navigator.clipboard.writeText(logEl.textContent); btnCopy.textContent = 'Copiado!'; setTimeout(()=>btnCopy.textContent='Copiar registro',1500);}catch(e){}
+});
+
+function short(uuid){
+  const m = /^0000([0-9a-f]{4})-0000-1000-8000-00805f9b34fb$/i.exec(uuid);
+  return m ? ('0x' + m[1].toUpperCase()) : uuid;
+}
+
+function buildTest(){
+  const enc = new TextEncoder();
+  const parts = [];
+  const push = (arr)=>parts.push(arr instanceof Uint8Array ? arr : enc.encode(arr));
+
+  push(new Uint8Array([0x1b,0x40]));
+  push(new Uint8Array([0x1b,0x61,0x01]));
+  push(new Uint8Array([0x1b,0x21,0x30]));
+  push("PDV SACOLAO\n");
+  push(new Uint8Array([0x1b,0x21,0x00]));
+  push("Teste de impressora\n");
+  push("KA-7048 via Bluetooth\n");
+  push(new Uint8Array([0x1b,0x61,0x00]));
+  push("--------------------------------\n");
+  push("Se voce esta lendo isso,\n");
+  push("a conexao deu certo! :)\n");
+  push("--------------------------------\n");
+  push(new Date().toLocaleString('pt-BR') + "\n");
+  push("\n\n\n\n");
+
+  let total = 0; parts.forEach(p=>total+=p.length);
+  const out = new Uint8Array(total);
+  let o = 0; parts.forEach(p=>{ out.set(p,o); o+=p.length; });
+  return out;
+}
+
+async function writeChunks(ch, data){
+  const size = 20;
+  const noResp = ch.properties.writeWithoutResponse;
+  for(let i=0;i<data.length;i+=size){
+    const chunk = data.slice(i, i+size);
+    if(noResp && ch.writeValueWithoutResponse) await ch.writeValueWithoutResponse(chunk);
+    else await ch.writeValue(chunk);
+    await new Promise(r=>setTimeout(r, 25));
+  }
+}
+</script>
+</body>
+</html>
